@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { AIProvider, AIProviderResponse } from './ai-provider';
-import { GeminiProvider } from './gemini-provider';
+import { OpenRouterProvider } from './openrouter-provider';
 import { GrokProvider } from './grok-provider';
 import { OllamaProvider } from './ollama-provider';
 import { 
@@ -14,15 +14,15 @@ import {
 } from '../errors';
 
 export class ProviderRouter implements AIProvider {
-  private providers: AIProvider[];
+  private providerFactories: (() => AIProvider)[];
   private maxCalls: number;
   private currentCallCount: number;
 
   constructor(initialCallCount: number = 1) {
-    this.providers = [
-      new GeminiProvider(),
-      new GrokProvider(),
-      new OllamaProvider()
+    this.providerFactories = [
+      () => new OpenRouterProvider(),
+      () => new GrokProvider(),
+      () => new OllamaProvider()
     ];
     this.maxCalls = parseInt(process.env.MAX_AI_CALLS || "10", 10);
     this.currentCallCount = initialCallCount;
@@ -46,10 +46,23 @@ export class ProviderRouter implements AIProvider {
     let lastError: any = null;
     let fallbackReason = "";
     
-    for (let i = 0; i < this.providers.length; i++) {
-      const provider = this.providers[i];
+    for (let i = 0; i < this.providerFactories.length; i++) {
       const isFallback = i > 0;
       
+      let provider: AIProvider;
+      let providerName = "Unknown";
+      
+      try {
+        provider = this.providerFactories[i]();
+        providerName = provider.constructor.name.replace('Provider', '');
+      } catch (e: any) {
+        // If a provider fails to instantiate (e.g. missing API key), skip it and fallback
+        lastError = e;
+        fallbackReason = `PROVIDER_INIT_FAILED: ${e.message}`;
+        console.error(`Skipping provider at index ${i} due to init error: ${e.message}`);
+        continue;
+      }
+
       if (this.currentCallCount > this.maxCalls) {
         throw new AIBudgetExceededError(`Global AI budget of ${this.maxCalls} calls exceeded.`);
       }
@@ -88,11 +101,12 @@ export class ProviderRouter implements AIProvider {
         if (this.isRecoverableError(error)) {
           lastError = error;
           fallbackReason = `${providerName.toUpperCase()}_${error.name || 'UNAVAILABLE'}`;
-          console.log(`Marking ${providerName} temporarily unavailable. Moving to next provider...`);
+          console.error(`Marking ${providerName} temporarily unavailable. Moving to next provider... Error: ${error.message}`);
           continue;
         }
 
         // Unrecoverable errors (Validation, Auth, Local unavailable, etc.) bubble up immediately
+        console.error(`Unrecoverable error in ${providerName}:`, error);
         throw error;
       }
     }

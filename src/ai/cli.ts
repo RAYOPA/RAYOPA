@@ -1,5 +1,6 @@
 import { config } from 'dotenv';
-config({ path: '.env.local' });
+config({ path: '.env' });
+config({ path: '.env.local', override: false });
 import { ProviderRouter } from './providers/provider-router';
 import { ObjectiveAnalyzer } from './prompts/objective-analyzer';
 import { DynamicPlanner } from './prompts/planner';
@@ -26,7 +27,7 @@ async function main() {
     const payload = JSON.parse(inputData);
     const { objective, completed_actions, failures, tools, context, ai_call_count } = payload;
 
-    if (!objective && mode !== "replan") {
+    if (!objective && mode !== "replan" && mode !== "plan") {
       throw new Error("Missing 'objective' in payload");
     }
 

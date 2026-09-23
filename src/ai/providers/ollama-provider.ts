@@ -33,6 +33,7 @@ export class OllamaProvider implements AIProvider {
     try {
       const response = await fetch(`${this.baseUrl}/api/chat`, {
         method: "POST",
+        signal: AbortSignal.timeout(5000),
         headers: {
           "Content-Type": "application/json"
         },
