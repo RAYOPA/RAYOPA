@@ -48,6 +48,7 @@ Overall Approval Required: ${objective.approvalRequired}
 
 Plan the steps carefully using only the available tools.`;
 
-    return await this.ai.generateStructured<Plan>(prompt, PlanSchema, systemInstruction);
+    const response = await this.ai.generateStructured<Plan>(prompt, PlanSchema, systemInstruction);
+    return response.structured_output;
   }
 }

@@ -53,13 +53,13 @@ def planner_node(state: State) -> State:
         
     tools_dict = get_tools_dictionary()
     
-    # Mode: REPLAN (if failures exist)
     if state.failures:
         state.ai_call_count += 1
         payload = {
             "failures": state.failures,
             "context": state.context,
-            "tools": tools_dict
+            "tools": tools_dict,
+            "ai_call_count": state.ai_call_count
         }
         res = run_cli(payload, "replan")
         if res.get("status") == "SUCCESS":
@@ -85,7 +85,7 @@ def planner_node(state: State) -> State:
     # Mode: PLAN (Batch Architecture)
     # 1. Analyze
     state.ai_call_count += 1
-    analyze_payload = {"objective": state.objective, "tools": tools_dict}
+    analyze_payload = {"objective": state.objective, "tools": tools_dict, "ai_call_count": state.ai_call_count}
     analyze_res = run_cli(analyze_payload, "analyze")
     
     if analyze_res.get("status") != "SUCCESS":
@@ -139,7 +139,8 @@ def planner_node(state: State) -> State:
         "structured_objective": structured_obj,
         "context": context_data,
         "completed_actions": completed_actions,
-        "tools": tools_dict
+        "tools": tools_dict,
+        "ai_call_count": state.ai_call_count
     }
     plan_res = run_cli(plan_payload, "plan")
     

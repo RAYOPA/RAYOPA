@@ -23,6 +23,7 @@ Extract the required fields:
 - requiredActions: Array of logical steps requested (e.g., analyze, prioritize, prepare_follow_up, request_approval, execute).
 - approvalRequired: Boolean, true if the task involves sensitive state changes.`;
 
-    return await this.ai.generateStructured<Objective>(prompt, ObjectiveSchema, systemInstruction);
+    const response = await this.ai.generateStructured<Objective>(prompt, ObjectiveSchema, systemInstruction);
+    return response.structured_output;
   }
 }

@@ -1,6 +1,6 @@
 import { config } from 'dotenv';
 config({ path: '.env.local' });
-import { GeminiProvider } from './providers/gemini-provider';
+import { ProviderRouter } from './providers/provider-router';
 import { ObjectiveAnalyzer } from './prompts/objective-analyzer';
 import { DynamicPlanner } from './prompts/planner';
 import { PlanVerifier } from './prompts/plan-verifier';
@@ -24,7 +24,7 @@ async function main() {
     }
 
     const payload = JSON.parse(inputData);
-    const { objective, completed_actions, failures, tools, context } = payload;
+    const { objective, completed_actions, failures, tools, context, ai_call_count } = payload;
 
     if (!objective && mode !== "replan") {
       throw new Error("Missing 'objective' in payload");
@@ -35,7 +35,7 @@ async function main() {
       setToolRegistry(tools);
     }
 
-    const ai = new GeminiProvider();
+    const ai = new ProviderRouter(ai_call_count || 1);
     
     if (mode === "analyze") {
       const analyzer = new ObjectiveAnalyzer(ai);
