@@ -17,6 +17,10 @@ export function setToolRegistry(tools: Record<string, ToolDefinition>) {
  */
 export function getAvailableToolsDescription(): string {
   return Object.values(ToolRegistry).map(tool => {
-    return `- **${tool.name}**: ${tool.description}\n  Inputs: ${JSON.stringify(tool.inputSchema?.properties || tool.inputSchema)}`;
-  }).join('\n\n');
+    let inputsStr = "";
+    if (tool.inputSchema?.properties) {
+      inputsStr = Object.keys(tool.inputSchema.properties).join(", ");
+    }
+    return `- ${tool.name}(${inputsStr}): ${tool.description} ${tool.requiresApproval ? '(Requires Approval)' : ''}`;
+  }).join('\n');
 }

@@ -18,7 +18,7 @@ def get_tools_dictionary() -> Dict[str, Any]:
 
 def run_cli(payload: dict, mode: str) -> dict:
     payload_str = json.dumps(payload)
-    cli_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "src", "ai", "cli.js")
+    cli_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "src", "ai", "cli.ts")
     import tempfile
     try:
         with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.json') as temp_file:
@@ -27,12 +27,15 @@ def run_cli(payload: dict, mode: str) -> dict:
 
         print(f"Calling TS AI Orchestrator via CLI (Mode: {mode})")
         result = subprocess.run(
-            ["node", cli_path, temp_file_path, mode],
+            ["npx", "tsx", cli_path, temp_file_path, mode],
             text=True, capture_output=True, check=True, shell=True
         )
         
         try: os.remove(temp_file_path)
         except OSError: pass
+            
+        if result.stderr:
+            print(f"TS CLI stderr: {result.stderr}")
             
         stdout_str = result.stdout
         if "{" in stdout_str:
@@ -109,15 +112,22 @@ def planner_node(state: State) -> State:
     
     # Enrich with customers and payment history
     gathered_cases = []
+    # Evaluate basic conditions if they exist
+    required_amount = 0
+    for cond in structured_obj.get("conditions", []):
+        if cond.get("field") == "amount" and cond.get("operator") in [">", ">="]:
+            required_amount = float(cond.get("value"))
+
     for inv in invoices:
-        cust_res = registry.execute_tool("getCustomer", {"customer_id": inv["customer_id"]}, ctx)
-        contact_res = registry.execute_tool("getCustomerContacts", {"customer_id": inv["customer_id"]}, ctx)
-        
-        gathered_cases.append({
-            "invoice": inv,
-            "customer": cust_res.data if cust_res.status == "SUCCESS" else None,
-            "contacts": contact_res.data if contact_res.status == "SUCCESS" else None
-        })
+        if float(inv.get("amount", 0)) >= required_amount:
+            cust_res = registry.execute_tool("getCustomer", {"customer_id": inv["customer_id"]}, ctx)
+            contact_res = registry.execute_tool("getCustomerContacts", {"customer_id": inv["customer_id"]}, ctx)
+            
+            gathered_cases.append({
+                "invoice": inv,
+                "customer": cust_res.data if cust_res.status == "SUCCESS" else None,
+                "contacts": contact_res.data if contact_res.status == "SUCCESS" else None
+            })
         
     # Get Policy
     pol_res = registry.execute_tool("getPolicy", {"policy_type": "overdue"}, ctx)

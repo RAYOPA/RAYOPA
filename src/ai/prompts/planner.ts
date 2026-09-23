@@ -6,7 +6,7 @@ import { getAvailableToolsDescription } from '../tools/registry';
 export class DynamicPlanner {
   constructor(private ai: AIProvider) {}
 
-  async plan(objective: Objective): Promise<Plan> {
+  async plan(objective: Objective, contextData?: string): Promise<Plan> {
     const tools = getAvailableToolsDescription();
 
     const systemInstruction = `You are the Dynamic Planner for FlowPilot AI.
@@ -46,7 +46,13 @@ Conditions: ${JSON.stringify(objective.conditions)}
 Required Actions: ${objective.requiredActions.join(", ")}
 Overall Approval Required: ${objective.approvalRequired}
 
+${contextData ? `Business Data:\n${contextData}\n` : ''}
 Plan the steps carefully using only the available tools.`;
+
+    console.error(`--- AI PLANNER PROMPT METRICS ---`);
+    console.error(`System Instruction Size: ${systemInstruction.length} chars`);
+    console.error(`User Prompt Size: ${prompt.length} chars`);
+    console.error(`Total Size: ${systemInstruction.length + prompt.length} chars`);
 
     const response = await this.ai.generateStructured<Plan>(prompt, PlanSchema, systemInstruction);
     return response.structured_output;

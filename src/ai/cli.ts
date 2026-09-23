@@ -55,15 +55,10 @@ async function main() {
       const structuredObjective = payload.structured_objective;
       if (!structuredObjective) throw new Error("Missing structured_objective for plan mode");
       
-      // Inject context into the planner somehow... 
-      // We can just embed the batch context into the objective string or conditions?
-      // Better: we pass the context directly into the prompt in DynamicPlanner.
-      // Wait, DynamicPlanner's plan() takes Objective. We'll hack it into the objective string for now.
+      // Pass context cleanly
+      const contextStr = context ? JSON.stringify(context, null, 2) : undefined;
       
-      const contextStr = context ? JSON.stringify(context, null, 2) : "{}";
-      structuredObjective.objective = `[BATCH MODE]\nOriginal Objective: ${structuredObjective.objective}\n\nContext Data for all cases:\n${contextStr}`;
-      
-      const plan = await planner.plan(structuredObjective);
+      const plan = await planner.plan(structuredObjective, contextStr);
       verifier.verify(plan);
       
       console.log(JSON.stringify({
