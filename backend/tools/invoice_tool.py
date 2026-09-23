@@ -25,7 +25,7 @@ def get_invoice_execute(input_data: Dict[str, Any], context: ToolContext) -> Too
 
 def get_overdue_invoices_execute(input_data: Dict[str, Any], context: ToolContext) -> ToolResult:
     db = context.db
-    invoices = db.query(Invoice).filter(Invoice.status == "OVERDUE").all()
+    invoices = db.query(Invoice).filter(Invoice.days_overdue > 0).all()
     
     results = []
     for inv in invoices:

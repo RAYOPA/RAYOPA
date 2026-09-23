@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const ConditionSchema = z.object({
   field: z.string(),
-  operator: z.enum(['equals', 'greater_than', 'less_than', 'greater_than_or_equal', 'less_than_or_equal', 'contains', 'not_equals']),
+  operator: z.string(),
   value: z.any()
 });
 

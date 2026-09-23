@@ -12,6 +12,8 @@ import * as fs from 'fs';
 async function main() {
   try {
     const filePath = process.argv[2];
+    const mode = process.argv[3] || "all"; // analyze, plan, replan, all
+    
     if (!filePath) {
       throw new Error("Missing file path argument");
     }
@@ -22,9 +24,9 @@ async function main() {
     }
 
     const payload = JSON.parse(inputData);
-    const { objective, completed_actions, failures, tools } = payload;
+    const { objective, completed_actions, failures, tools, context } = payload;
 
-    if (!objective) {
+    if (!objective && mode !== "replan") {
       throw new Error("Missing 'objective' in payload");
     }
 
@@ -33,53 +35,82 @@ async function main() {
       setToolRegistry(tools);
     }
 
-    // Construct the context-aware objective string
-    const completedStr = completed_actions && completed_actions.length > 0 
-      ? JSON.stringify(completed_actions, null, 2) 
-      : '[]';
+    const ai = new GeminiProvider();
+    
+    if (mode === "analyze") {
+      const analyzer = new ObjectiveAnalyzer(ai);
+      const structuredObjective = await analyzer.analyze(objective);
+      console.log(JSON.stringify({
+        status: "SUCCESS",
+        structured_objective: structuredObjective
+      }));
+      return;
+    } 
+    
+    if (mode === "plan") {
+      const planner = new DynamicPlanner(ai);
+      const verifier = new PlanVerifier();
       
-    const failuresStr = failures && failures.length > 0 
-      ? JSON.stringify(failures, null, 2) 
-      : '[]';
+      const structuredObjective = payload.structured_objective;
+      if (!structuredObjective) throw new Error("Missing structured_objective for plan mode");
+      
+      // Inject context into the planner somehow... 
+      // We can just embed the batch context into the objective string or conditions?
+      // Better: we pass the context directly into the prompt in DynamicPlanner.
+      // Wait, DynamicPlanner's plan() takes Objective. We'll hack it into the objective string for now.
+      
+      const contextStr = context ? JSON.stringify(context, null, 2) : "{}";
+      structuredObjective.objective = `[BATCH MODE]\nOriginal Objective: ${structuredObjective.objective}\n\nContext Data for all cases:\n${contextStr}`;
+      
+      const plan = await planner.plan(structuredObjective);
+      verifier.verify(plan);
+      
+      console.log(JSON.stringify({
+        status: "SUCCESS",
+        steps: plan.steps
+      }));
+      return;
+    }
+    
+    if (mode === "replan") {
+      // Create a Replan prompt using DynamicPlanner, but pass failure context.
+      const planner = new DynamicPlanner(ai);
+      const verifier = new PlanVerifier();
+      
+      // We'll mock a structured objective for the replan since DynamicPlanner takes one.
+      const failuresStr = JSON.stringify(failures, null, 2);
+      const contextStr = JSON.stringify(context || {}, null, 2);
+      
+      const replanObj = {
+        objective: `[REPLAN MODE] A tool execution failed. Recover from this failure.\n\nFailures:\n${failuresStr}\n\nContext:\n${contextStr}`,
+        entities: [],
+        conditions: [],
+        requiredActions: ["Recover from failure"],
+        approvalRequired: false
+      };
+      
+      const plan = await planner.plan(replanObj);
+      verifier.verify(plan);
+      
+      console.log(JSON.stringify({
+        status: "SUCCESS",
+        steps: plan.steps
+      }));
+      return;
+    }
 
+    // Fallback for "all" mode (the original behavior for compatibility)
+    const completedStr = completed_actions && completed_actions.length > 0 ? JSON.stringify(completed_actions, null, 2) : '[]';
+    const failuresStr = failures && failures.length > 0 ? JSON.stringify(failures, null, 2) : '[]';
     const fullObjective = `Objective: ${objective}\n\nCompleted Actions:\n${completedStr}\n\nRecent Failures:\n${failuresStr}\n\nGiven this context, what are the next steps to take? If the objective is fully achieved or no more steps are needed, output an empty plan.`;
 
-    // Initialize AI
-    const ai = new GeminiProvider();
     const analyzer = new ObjectiveAnalyzer(ai);
     const planner = new DynamicPlanner(ai);
     const verifier = new PlanVerifier();
 
-    // Run AI pipeline
-    let plan;
-    try {
-      const structuredObjective = await analyzer.analyze(fullObjective);
-      plan = await planner.plan(structuredObjective);
-      verifier.verify(plan);
-    } catch (apiError: any) {
-      // Fallback for tests when no API key is provided
-      if (objective.includes("invalid@acme.com first")) {
-        if (!completed_actions || completed_actions.length === 0) {
-          if (failures && failures.length > 0) {
-            plan = { steps: [{ tool: "getCustomer", arguments: { customer_id: "cust-1" }, action: "Get real email", requiresApproval: false }] };
-          } else {
-            plan = { steps: [{ tool: "sendEmail", arguments: { recipient: "invalid@acme.com", subject: "Invoice INV-1004 Reminder", body: "Please pay." }, action: "Send initial email", requiresApproval: true }] };
-          }
-        } else if (completed_actions.length === 1) {
-          plan = { steps: [{ tool: "sendEmail", arguments: { recipient: "contact@acme.com", subject: "Invoice INV-1004 Reminder", body: "Please pay." }, action: "Send email to real address", requiresApproval: true }] };
-        } else {
-          plan = { steps: [] };
-        }
-      } else if (objective.includes("communication history")) {
-        if (!completed_actions || completed_actions.length === 0) {
-          plan = { steps: [{ tool: "getCustomer", arguments: { customer_id: "cust-1" }, action: "Get customer details", requiresApproval: false }] };
-        } else {
-          plan = { steps: [] };
-        }
-      } else {
-        throw apiError; // Rethrow if it's not a recognized test
-      }
-    }
+    const structuredObjective = await analyzer.analyze(fullObjective);
+    const plan = await planner.plan(structuredObjective);
+    verifier.verify(plan);
 
     console.log(JSON.stringify({
       status: "SUCCESS",
@@ -97,7 +128,6 @@ async function main() {
       error: errorCode,
       message: e.message || String(e)
     }));
-    return;
   }
 }
 

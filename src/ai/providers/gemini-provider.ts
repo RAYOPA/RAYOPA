@@ -15,7 +15,7 @@ export class GeminiProvider implements AIProvider {
     
     // Initialize the official Gemini SDK
     this.ai = new GoogleGenAI({ apiKey });
-    this.model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+    this.model = process.env.GEMINI_MODEL || "gemini-3.6-flash";
   }
 
   async generateStructured<T>(
@@ -33,7 +33,7 @@ export class GeminiProvider implements AIProvider {
       config.systemInstruction = systemInstruction;
     }
 
-    const maxRetries = 3;
+    const maxRetries = 5;
     let attempt = 0;
 
     while (attempt < maxRetries) {
@@ -69,6 +69,8 @@ export class GeminiProvider implements AIProvider {
         return parsedData;
         
       } catch (error: any) {
+        console.error(`Gemini API Error on attempt ${attempt}:`, error?.message || error);
+
         // If it's a Zod validation error, DO NOT retry (permanent malformed output)
         if (error instanceof z.ZodError) {
           throw new ValidationError("AI output failed schema validation: " + error.message);
@@ -89,9 +91,13 @@ export class GeminiProvider implements AIProvider {
           // Exponential backoff: 2s, 4s, 8s + jitter
           const baseDelay = Math.pow(2, attempt) * 1000;
           const jitter = Math.random() * 500;
-          const waitTime = baseDelay + jitter;
-          console.warn(`[GeminiProvider] Attempt ${attempt} failed with UNAVAILABLE. Retrying in ${Math.round(waitTime)}ms...`);
-          await new Promise(resolve => setTimeout(resolve, waitTime));
+          // Default backoff, but if 429, wait longer
+        let delayMs = 2000 * Math.pow(2, attempt); 
+        if (error.status === 429 || error?.message?.includes("429")) {
+            delayMs = 25000; // wait 25s for rate limit to reset
+        }
+        console.warn(`[GeminiProvider] Attempt ${attempt} failed with ${error.status || 'error'}. Retrying in ${delayMs}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
           continue; // Retry
         }
 

@@ -21,3 +21,5 @@ class State(BaseModel):
     completed_actions: List[ToolExecutionResult] = Field(default_factory=list)
     failures: List[Dict[str, Any]] = Field(default_factory=list)
     status: str = Field(default="PLAN")
+    context: Dict[str, Any] = Field(default_factory=dict)
+    ai_call_count: int = Field(default=0)

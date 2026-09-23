@@ -65550,7 +65550,7 @@ var GeminiProvider = class {
       throw new Error("GEMINI_API_KEY environment variable is missing.");
     }
     this.ai = new GoogleGenAI2({ apiKey });
-    this.model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+    this.model = process.env.GEMINI_MODEL || "gemini-3.6-flash";
   }
   async generateStructured(prompt, schema, systemInstruction) {
     const config3 = {
@@ -65561,7 +65561,7 @@ var GeminiProvider = class {
     if (systemInstruction) {
       config3.systemInstruction = systemInstruction;
     }
-    const maxRetries = 3;
+    const maxRetries = 5;
     let attempt = 0;
     while (attempt < maxRetries) {
       attempt++;
@@ -65589,6 +65589,7 @@ var GeminiProvider = class {
         const parsedData = schema.parse(jsonObject);
         return parsedData;
       } catch (error62) {
+        console.error(`Gemini API Error on attempt ${attempt}:`, error62?.message || error62);
         if (error62 instanceof external_exports.ZodError) {
           throw new ValidationError("AI output failed schema validation: " + error62.message);
         }
@@ -65599,9 +65600,12 @@ var GeminiProvider = class {
         if (isRetryable && attempt < maxRetries) {
           const baseDelay = Math.pow(2, attempt) * 1e3;
           const jitter = Math.random() * 500;
-          const waitTime = baseDelay + jitter;
-          console.warn(`[GeminiProvider] Attempt ${attempt} failed with UNAVAILABLE. Retrying in ${Math.round(waitTime)}ms...`);
-          await new Promise((resolve) => setTimeout(resolve, waitTime));
+          let delayMs = 2e3 * Math.pow(2, attempt);
+          if (error62.status === 429 || error62?.message?.includes("429")) {
+            delayMs = 25e3;
+          }
+          console.warn(`[GeminiProvider] Attempt ${attempt} failed with ${error62.status || "error"}. Retrying in ${delayMs}ms...`);
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
           continue;
         }
         if (isRetryable && attempt >= maxRetries) {
@@ -65617,7 +65621,7 @@ var GeminiProvider = class {
 // src/ai/schemas/objective.ts
 var ConditionSchema = external_exports.object({
   field: external_exports.string(),
-  operator: external_exports.enum(["equals", "greater_than", "less_than", "greater_than_or_equal", "less_than_or_equal", "contains", "not_equals"]),
+  operator: external_exports.string(),
   value: external_exports.any()
 });
 var ObjectiveSchema = external_exports.object({
@@ -65764,6 +65768,7 @@ var fs3 = __toESM(require("fs"));
 async function main() {
   try {
     const filePath = process.argv[2];
+    const mode = process.argv[3] || "all";
     if (!filePath) {
       throw new Error("Missing file path argument");
     }
@@ -65772,12 +65777,67 @@ async function main() {
       throw new Error("No input data received on stdin");
     }
     const payload = JSON.parse(inputData);
-    const { objective, completed_actions, failures, tools } = payload;
-    if (!objective) {
+    const { objective, completed_actions, failures, tools, context } = payload;
+    if (!objective && mode !== "replan") {
       throw new Error("Missing 'objective' in payload");
     }
     if (tools) {
       setToolRegistry(tools);
+    }
+    const ai = new GeminiProvider();
+    if (mode === "analyze") {
+      const analyzer2 = new ObjectiveAnalyzer(ai);
+      const structuredObjective2 = await analyzer2.analyze(objective);
+      console.log(JSON.stringify({
+        status: "SUCCESS",
+        structured_objective: structuredObjective2
+      }));
+      return;
+    }
+    if (mode === "plan") {
+      const planner2 = new DynamicPlanner(ai);
+      const verifier2 = new PlanVerifier();
+      const structuredObjective2 = payload.structured_objective;
+      if (!structuredObjective2) throw new Error("Missing structured_objective for plan mode");
+      const contextStr = context ? JSON.stringify(context, null, 2) : "{}";
+      structuredObjective2.objective = `[BATCH MODE]
+Original Objective: ${structuredObjective2.objective}
+
+Context Data for all cases:
+${contextStr}`;
+      const plan2 = await planner2.plan(structuredObjective2);
+      verifier2.verify(plan2);
+      console.log(JSON.stringify({
+        status: "SUCCESS",
+        steps: plan2.steps
+      }));
+      return;
+    }
+    if (mode === "replan") {
+      const planner2 = new DynamicPlanner(ai);
+      const verifier2 = new PlanVerifier();
+      const failuresStr2 = JSON.stringify(failures, null, 2);
+      const contextStr = JSON.stringify(context || {}, null, 2);
+      const replanObj = {
+        objective: `[REPLAN MODE] A tool execution failed. Recover from this failure.
+
+Failures:
+${failuresStr2}
+
+Context:
+${contextStr}`,
+        entities: [],
+        conditions: [],
+        requiredActions: ["Recover from failure"],
+        approvalRequired: false
+      };
+      const plan2 = await planner2.plan(replanObj);
+      verifier2.verify(plan2);
+      console.log(JSON.stringify({
+        status: "SUCCESS",
+        steps: plan2.steps
+      }));
+      return;
     }
     const completedStr = completed_actions && completed_actions.length > 0 ? JSON.stringify(completed_actions, null, 2) : "[]";
     const failuresStr = failures && failures.length > 0 ? JSON.stringify(failures, null, 2) : "[]";
@@ -65790,38 +65850,12 @@ Recent Failures:
 ${failuresStr}
 
 Given this context, what are the next steps to take? If the objective is fully achieved or no more steps are needed, output an empty plan.`;
-    const ai = new GeminiProvider();
     const analyzer = new ObjectiveAnalyzer(ai);
     const planner = new DynamicPlanner(ai);
     const verifier = new PlanVerifier();
-    let plan;
-    try {
-      const structuredObjective = await analyzer.analyze(fullObjective);
-      plan = await planner.plan(structuredObjective);
-      verifier.verify(plan);
-    } catch (apiError) {
-      if (objective.includes("invalid@acme.com first")) {
-        if (!completed_actions || completed_actions.length === 0) {
-          if (failures && failures.length > 0) {
-            plan = { steps: [{ tool: "getCustomer", arguments: { customer_id: "cust-1" }, action: "Get real email", requiresApproval: false }] };
-          } else {
-            plan = { steps: [{ tool: "sendEmail", arguments: { recipient: "invalid@acme.com", subject: "Invoice INV-1004 Reminder", body: "Please pay." }, action: "Send initial email", requiresApproval: true }] };
-          }
-        } else if (completed_actions.length === 1) {
-          plan = { steps: [{ tool: "sendEmail", arguments: { recipient: "contact@acme.com", subject: "Invoice INV-1004 Reminder", body: "Please pay." }, action: "Send email to real address", requiresApproval: true }] };
-        } else {
-          plan = { steps: [] };
-        }
-      } else if (objective.includes("communication history")) {
-        if (!completed_actions || completed_actions.length === 0) {
-          plan = { steps: [{ tool: "getCustomer", arguments: { customer_id: "cust-1" }, action: "Get customer details", requiresApproval: false }] };
-        } else {
-          plan = { steps: [] };
-        }
-      } else {
-        throw apiError;
-      }
-    }
+    const structuredObjective = await analyzer.analyze(fullObjective);
+    const plan = await planner.plan(structuredObjective);
+    verifier.verify(plan);
     console.log(JSON.stringify({
       status: "SUCCESS",
       steps: plan.steps
@@ -65836,7 +65870,6 @@ Given this context, what are the next steps to take? If the objective is fully a
       error: errorCode,
       message: e2.message || String(e2)
     }));
-    return;
   }
 }
 main();
