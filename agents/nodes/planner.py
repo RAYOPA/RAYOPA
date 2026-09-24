@@ -121,23 +121,32 @@ def planner_node(state: State) -> State:
     for inv in invoices:
         if float(inv.get("amount", 0)) >= required_amount:
             cust_res = registry.execute_tool("getCustomer", {"customer_id": inv["customer_id"]}, ctx)
-            contact_res = registry.execute_tool("getCustomerContacts", {"customer_id": inv["customer_id"]}, ctx)
+            c_data = cust_res.data if (cust_res.status == "SUCCESS" and cust_res.data) else {}
             
-            gathered_cases.append({
-                "invoice": inv,
-                "customer": cust_res.data if cust_res.status == "SUCCESS" else None,
-                "contacts": contact_res.data if contact_res.status == "SUCCESS" else None
-            })
+            compact_case = {
+                "inv": inv.get("invoice_number") or inv.get("id"),
+                "cust": c_data.get("name") or inv.get("customer_id"),
+                "email": c_data.get("email"),
+                "amt": float(inv.get("amount", 0)),
+                "days_overdue": inv.get("days_overdue", 0),
+                "status": inv.get("status", "OVERDUE")
+            }
+            if c_data.get("phone"):
+                compact_case["alt_contact"] = c_data.get("phone")
+                
+            gathered_cases.append(compact_case)
         
-    # Get Policy
-    pol_res = registry.execute_tool("getPolicy", {"policy_type": "overdue"}, ctx)
-    policy = pol_res.data.get("content") if pol_res.status == "SUCCESS" else ""
+    compact_policy = (
+        "POLICY: amt>=100k & overdue>30d -> mgr approval; amt>500k -> fin-mgr approval; "
+        "status==PAYMENT_EXTENDED -> monitoring only; failed email -> find alt contact; "
+        "ext comms -> approval required"
+    )
     
     db.close()
     
     context_data = {
         "cases": gathered_cases,
-        "policy": policy
+        "policy": compact_policy
     }
     state.context = context_data
     

@@ -10,29 +10,20 @@ export class DynamicPlanner {
     const tools = getAvailableToolsDescription();
 
     const systemInstruction = `You are the Dynamic Planner for FlowPilot AI.
-Your job is to translate a structured business objective into a sequential execution plan.
+Translate a structured business objective into a sequential execution plan.
 
-AVAILABLE TOOLS ARE AUTHORITATIVE.
-You MUST select tools only from the provided AVAILABLE TOOLS list.
-NEVER invent, infer, or fabricate a tool name.
-NEVER output placeholder tool names such as:
-- unknown_tool
-- unavailable_tool
-- example_tool
-
-If no available tool can satisfy a required action, select the single closest matching available tool.
-Every generated tool name must exactly match one of the available tools.
+RULES:
+1. AVAILABLE TOOLS ARE AUTHORITATIVE. Select tools ONLY from the list.
+2. NEVER invent tool names (e.g. unknown_tool, example_tool). Every tool must match an available tool exactly.
+3. Each step must have a unique stepId (e.g., step_1).
+4. 'dependsOn' contains array of stepIds that execute before this step.
+5. 'tool' must be the exact tool name from the list.
+6. Set 'requiresApproval': true for sensitive actions (emails, customer status changes, escalations).
 
 Available Tools:
 ${tools}
 
-Rules:
-1. Each step must have a unique stepId (e.g., step_1).
-2. 'dependsOn' must contain an array of stepIds that must execute before this step.
-3. 'tool' must be the exact name from the registry.
-4. Set 'requiresApproval' to true for steps that actually perform sensitive actions (such as sending emails, updating customer status, or escalating cases), based on the objective's requirement.
-
-Example valid step format using real tools:
+Example step:
 {
   "stepId": "step_1",
   "action": "Fetch overdue invoices",
@@ -42,16 +33,16 @@ Example valid step format using real tools:
   "requiresApproval": false
 }
 
-You must output a JSON object with this exact structure:
+JSON output format:
 {
-  "objective": "The overall objective this plan achieves",
+  "objective": "The overall objective",
   "steps": [
     {
-      "stepId": "unique string identifier",
-      "action": "human readable description of the step",
-      "tool": "exact tool name from the registry",
-      "arguments": { "key": "value" },
-      "dependsOn": ["array of stepIds"],
+      "stepId": "string",
+      "action": "string",
+      "tool": "string",
+      "arguments": {},
+      "dependsOn": ["stepId"],
       "requiresApproval": boolean
     }
   ]
@@ -68,10 +59,14 @@ Overall Approval Required: ${objective.approvalRequired}
 ${contextData ? `Business Data:\n${contextData}\n` : ''}
 Plan the steps carefully using only the available tools.`;
 
-    console.error(`--- AI PLANNER PROMPT METRICS ---`);
-    console.error(`System Instruction Size: ${systemInstruction.length} chars`);
-    console.error(`User Prompt Size: ${prompt.length} chars`);
-    console.error(`Total Size: ${systemInstruction.length + prompt.length} chars`);
+    const promptChars = systemInstruction.length + prompt.length;
+    const tokensEst = Math.ceil(promptChars / 4);
+    console.error(`--- AI PLANNER PROMPT DIAGNOSTICS ---`);
+    console.error(`planner_prompt_chars=${promptChars}`);
+    console.error(`planner_prompt_tokens_estimate=${tokensEst}`);
+    console.error(`tool_context_chars=${tools.length}`);
+    console.error(`business_context_chars=${contextData ? contextData.length : 0}`);
+    console.error(`system_instruction_chars=${systemInstruction.length}`);
 
     const response = await this.ai.generateStructured<Plan>(prompt, PlanSchema, systemInstruction);
     return response.structured_output;
