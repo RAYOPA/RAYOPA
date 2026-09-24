@@ -1,0 +1,16 @@
+{
+  "scan_type": "security_and_secrets",
+  "baseline_commit": "6d6efd8",
+  "status": "PASS",
+  "findings": {
+    "hardcoded_secrets": false,
+    "gemini_credential_present": false,
+    "env_example_clean": true,
+    "env_ignored": true,
+    "temporary_db_ignored": true,
+    "sandbox_email_enforced": true,
+    "approval_boundary_secure": true,
+    "arbitrary_execution_prevented": true
+  },
+  "notes": "Verified .gitignore for .env and .db files. Checked .env.example contains only placeholders. Scanned for Gemini API keys and sk- keys (no active secrets found). Sandbox mode is explicitly checked before simulated delivery. Executor node correctly halts if state.status != APPROVED."
+}
