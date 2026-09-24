@@ -1,0 +1,37 @@
+{
+  "timestamp": "2026-09-25T01:27:14.738524",
+  "all_passed": true,
+  "tests": {
+    "approval_path": {
+      "test": "approval_path",
+      "workflow_id": "wf-appr-89309f",
+      "final_status": "COMPLETED",
+      "approvals_requested": 3,
+      "approvals_approved": 3,
+      "sensitive_actions_executed": [
+        "beta@acme.com",
+        "gamma@acme.com",
+        "zeta@acme.com"
+      ],
+      "beta_executed": true,
+      "gamma_executed": true,
+      "zeta_executed": true,
+      "audit_events_count": 27,
+      "audit_chronological": true,
+      "pass": true
+    },
+    "rejection_path": {
+      "test": "rejection_path",
+      "workflow_id": "wf-rej-437213",
+      "final_status": "REJECTED",
+      "rejected_action": "sendEmail (beta@acme.com)",
+      "rejected_action_executed": false,
+      "unauthorized_executions": [],
+      "database_workflow_status": "REJECTED",
+      "database_approval_status": "REJECTED",
+      "audit_events_count": 6,
+      "audit_chronological": true,
+      "pass": true
+    }
+  }
+}

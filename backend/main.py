@@ -204,7 +204,7 @@ def list_workflows(db: Session = Depends(get_db)):
     res = []
     for wf in workflows:
         live = WORKFLOW_STATES.get(wf.id)
-        current_status = live.status if live else wf.status
+        current_status = wf.status if wf.status in ["REJECTED", "FAILED"] else (live.status if live else wf.status)
         res.append({
             "id": wf.id,
             "objective": wf.objective,
@@ -232,7 +232,7 @@ def get_workflow(id: str, db: Session = Depends(get_db)):
     status = wf.status
 
     if live_state:
-        status = live_state.status
+        status = wf.status if wf.status in ["REJECTED", "FAILED"] else live_state.status
         current_step_index = live_state.current_step_index
         ai_call_count = live_state.ai_call_count
         plan = [p.model_dump() for p in live_state.plan]
@@ -325,6 +325,19 @@ def approve_action(id: str, payload: Dict[str, Any] = None, background_tasks: Ba
         approval.approved_at = func.now()
         db.commit()
 
+        db_event = AuditEvent(
+            id=str(uuid.uuid4()),
+            workflow_id=id,
+            event_type="Action Approved",
+            actor="HumanInTheLoop",
+            tool=approval.action,
+            status="APPROVED",
+            summary=f"Action approved by {payload.get('actor', 'USER')}",
+            metadata_json=payload
+        )
+        db.add(db_event)
+        db.commit()
+
     wf = db.query(Workflow).filter(Workflow.id == id).first()
     if wf:
         wf.status = "IN_PROGRESS"
@@ -352,10 +365,26 @@ def reject_action(id: str, payload: Dict[str, Any] = None, db: Session = Depends
         approval.status = "REJECTED"
         db.commit()
 
+        db_event = AuditEvent(
+            id=str(uuid.uuid4()),
+            workflow_id=id,
+            event_type="Action Rejected",
+            actor="HumanInTheLoop",
+            tool=approval.action,
+            status="REJECTED",
+            summary=f"Operator rejected action: {approval.action}",
+            metadata_json=payload
+        )
+        db.add(db_event)
+        db.commit()
+
     wf = db.query(Workflow).filter(Workflow.id == id).first()
     if wf:
         wf.status = "REJECTED"
         db.commit()
+
+    if id in WORKFLOW_STATES:
+        WORKFLOW_STATES[id].status = "REJECTED"
 
     return {"status": "REJECTED", "workflow_id": id}
 
