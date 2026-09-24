@@ -1,10 +1,10 @@
 import { config } from 'dotenv';
 config({ path: '.env' });
-import { OllamaProvider } from './src/ai/providers/ollama-provider';
-import { PlanSchema } from './src/ai/schemas/plan';
-import { DynamicPlanner } from './src/ai/prompts/planner';
-import { setToolRegistry } from './src/ai/tools/registry';
-import { Objective } from './src/ai/schemas/objective';
+import { OllamaProvider } from '../../src/ai/providers/ollama-provider';
+import { PlanSchema } from '../../src/ai/schemas/plan';
+import { DynamicPlanner } from '../../src/ai/prompts/planner';
+import { setToolRegistry } from '../../src/ai/tools/registry';
+import { Objective } from '../../src/ai/schemas/objective';
 
 // Set up sample tool registry
 setToolRegistry({
