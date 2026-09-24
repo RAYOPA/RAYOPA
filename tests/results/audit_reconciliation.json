@@ -1,0 +1,56 @@
+{
+  "timestamp": "2026-09-25T01:39:24.807000",
+  "baseline_commit": "0d00346",
+  "all_reconciled": true,
+  "reconciliation": {
+    "approval_path": {
+      "workflow_id": "wf-recon-appr-9e4aff",
+      "path": "approval_path",
+      "final_state_status": "COMPLETED",
+      "total_audit_events": 46,
+      "lifecycle_transitions": {
+        "workflow_start": true,
+        "planning_execution": true,
+        "approval_required": true,
+        "approval_granted": true,
+        "failure": true,
+        "replan": true,
+        "recovery": true,
+        "completion": true
+      },
+      "all_transitions_present": true,
+      "timestamp_monotonic": true,
+      "cross_layer_reconciliation": {
+        "state_completed_actions": 7,
+        "audit_task_success_events": 7,
+        "approval_records": 3,
+        "approved_records": 3,
+        "aligned": true
+      },
+      "pass": true
+    },
+    "rejection_path": {
+      "workflow_id": "wf-recon-rej-5aa028",
+      "path": "rejection_path",
+      "final_state_status": "REJECTED",
+      "total_audit_events": 22,
+      "lifecycle_transitions": {
+        "workflow_start": true,
+        "planning_execution": true,
+        "approval_required": true,
+        "approval_rejected": true,
+        "no_further_execution": true
+      },
+      "all_transitions_present": true,
+      "timestamp_monotonic": true,
+      "cross_layer_reconciliation": {
+        "completed_actions_before_rejection": 1,
+        "rejected_action_executed": false,
+        "db_workflow_status": "REJECTED",
+        "db_approval_status": "REJECTED",
+        "aligned": true
+      },
+      "pass": true
+    }
+  }
+}

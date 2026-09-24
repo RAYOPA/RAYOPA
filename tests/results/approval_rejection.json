@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-09-25T01:27:14.738524",
+  "timestamp": "2026-09-25T01:42:46.253247",
   "all_passed": true,
   "tests": {
     "approval_path": {
       "test": "approval_path",
-      "workflow_id": "wf-appr-89309f",
+      "workflow_id": "wf-appr-faafa8",
       "final_status": "COMPLETED",
       "approvals_requested": 3,
       "approvals_approved": 3,
@@ -22,7 +22,7 @@
     },
     "rejection_path": {
       "test": "rejection_path",
-      "workflow_id": "wf-rej-437213",
+      "workflow_id": "wf-rej-5ae0fe",
       "final_status": "REJECTED",
       "rejected_action": "sendEmail (beta@acme.com)",
       "rejected_action_executed": false,
