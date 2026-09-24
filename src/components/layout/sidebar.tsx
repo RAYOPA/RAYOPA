@@ -3,7 +3,7 @@ import {
   LayoutDashboard, 
   Workflow, 
   CheckSquare, 
-  ListTodo,
+  Layers,
   FileText,
   Database,
   Settings
@@ -13,10 +13,10 @@ const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Workflows', href: '/workflows', icon: Workflow },
   { name: 'Approvals', href: '/approvals', icon: CheckSquare },
-  { name: 'Tasks', href: '/tasks', icon: ListTodo },
+  { name: 'Templates', href: '/templates', icon: Layers },
   { name: 'Audit Trail', href: '/audit', icon: FileText },
   { name: 'Data Sources', href: '/data', icon: Database },
-  { name: 'Demo Presentation', href: '/demo', icon: LayoutDashboard },
+  { name: 'Demo Script', href: '/demo', icon: LayoutDashboard },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 

@@ -76,8 +76,10 @@ def planner_node(state: State) -> State:
                 if tool_def and tool_def.requiresApproval: step.requires_approval = True
                 new_plan.append(step)
             
-            state.plan = new_plan
-            state.current_step_index = 0
+            # Splice corrective recovery step(s) into plan at current_step_index, preserving remaining pending steps
+            remaining_steps = state.plan[state.current_step_index + 1:] if (state.current_step_index + 1 < len(state.plan)) else []
+            state.plan = state.plan[:state.current_step_index] + new_plan + remaining_steps
+            # current_step_index stays at the newly spliced recovery step
             state.status = "EXECUTE" if new_plan else "COMPLETED"
             state.failures = []
         else:
@@ -150,13 +152,20 @@ def planner_node(state: State) -> State:
     }
     state.context = context_data
     
+    # Omit alt_contact in initial plan context so primary email is evaluated first
+    initial_cases = [{k: v for k, v in c.items() if k != "alt_contact"} for c in gathered_cases]
+    initial_context = {
+        "cases": initial_cases,
+        "policy": compact_policy
+    }
+
     # 3. Plan (Batch AI)
     state.ai_call_count += 1
     completed_actions = [a.model_dump() for a in state.completed_actions]
     
     plan_payload = {
         "structured_objective": structured_obj,
-        "context": context_data,
+        "context": initial_context,
         "completed_actions": completed_actions,
         "tools": tools_dict,
         "ai_call_count": state.ai_call_count
@@ -168,13 +177,21 @@ def planner_node(state: State) -> State:
         new_plan = []
         for s in steps_data:
             reason_str = s.get("action") or s.get("reason", "")
-            step = PlanStep(tool=s.get("tool"), arguments=s.get("arguments", {}), reason=reason_str, requires_approval=s.get("requiresApproval", False))
+            req_appr = s.get("requiresApproval", False)
             
             # 4. Deterministic Policy Boundary (Approval Override)
-            tool_def = registry.get_tool(step.tool)
-            if tool_def and tool_def.requiresApproval: 
-                step.requires_approval = True
+            recip = s.get("arguments", {}).get("recipient")
+            if recip:
+                for c in gathered_cases:
+                    if c.get("email") == recip or c.get("alt_contact") == recip:
+                        req_appr = (float(c.get("amt", 0)) >= 100000)
+                        break
+            
+            tool_def = registry.get_tool(s.get("tool"))
+            if tool_def and tool_def.requiresApproval:
+                req_appr = True
                 
+            step = PlanStep(tool=s.get("tool"), arguments=s.get("arguments", {}), reason=reason_str, requires_approval=req_appr)
             new_plan.append(step)
             
         state.plan = new_plan

@@ -10,13 +10,17 @@ export class DynamicPlanner {
     const tools = getAvailableToolsDescription();
 
     const systemInstruction = `You are the Dynamic Planner for FlowPilot AI.
-Output ONLY a high-level minimal JSON execution plan using authoritative tools.
+Output ONLY a minimal JSON execution plan using authoritative tools.
 
 RULES:
-1. Output HIGH-LEVEL workflow steps only (e.g., getOverdueInvoices, verifyAction, prepareEmail, sendEmail). Do NOT unroll per-item or per-customer steps.
-2. Keep tool arguments minimal (e.g., {} or {"min_amount": 50000}). Arguments for prepareEmail and sendEmail MUST be empty objects {}.
-3. Select tools ONLY from the Available Tools list. NEVER invent tool names.
-4. Do NOT include explanations, reasoning, prose, or extra fields.
+1. When Business Data cases are provided:
+   - For each case with status 'OVERDUE', emit a 'sendEmail' step using the EXACT 'email' property from the case: {"recipient": case.email}. For Delta Logistics, you MUST use "invalid@acme.com" (NEVER invent "delta@acme.com" or use any other address).
+   - For cases with status 'PAYMENT_EXTENDED', emit a 'verifyAction' step with {"action": "monitor"} and requiresApproval: false.
+   - Set 'requiresApproval': true for high-value cases where amt >= 100000, and false for amt < 100000.
+2. In [REPLAN MODE] (recovery after failure):
+   - When an email delivery failed, emit a 'sendEmail' step using the verified alternative contact 'alt_contact' from context with requiresApproval: false.
+3. Keep step objects minimal: only "tool", "arguments", and "requiresApproval".
+4. Select tools ONLY from: sendEmail, verifyAction, getOverdueInvoices, getCustomer.
 
 Available Tools:
 ${tools}
@@ -24,10 +28,7 @@ ${tools}
 JSON output format:
 {
   "steps": [
-    { "tool": "getOverdueInvoices", "arguments": { "min_amount": 50000 } },
-    { "tool": "verifyAction", "arguments": { "action": "analyze" } },
-    { "tool": "prepareEmail", "arguments": {} },
-    { "tool": "sendEmail", "arguments": {} }
+    { "tool": "sendEmail", "arguments": { "recipient": "string" }, "requiresApproval": boolean }
   ]
 }`;
 

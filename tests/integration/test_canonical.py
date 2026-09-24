@@ -5,12 +5,13 @@ import uuid
 import time
 
 load_dotenv()
-os.environ["DATABASE_URL"] = "sqlite:///./data/flowpilot_day3.db"
+os.environ["DATABASE_URL"] = "sqlite:///./data/flowpilot_canonical_test.db"
 os.environ["EMAIL_MODE"] = "sandbox"
 
 os.makedirs("./data", exist_ok=True)
-if os.path.exists("./data/flowpilot_day3.db"):
-    os.remove("./data/flowpilot_day3.db")
+if os.path.exists("./data/flowpilot_canonical_test.db"):
+    try: os.remove("./data/flowpilot_canonical_test.db")
+    except Exception: pass
 
 from backend.database import Base, get_db, engine, SessionLocal
 from backend.models import Customer, Invoice, Workflow

@@ -1,146 +1,158 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Filter, History, Database, CheckCircle, ShieldAlert, AlertCircle, FileText, ArrowRight } from 'lucide-react';
-
-type AuditEvent = {
-  time: string;
-  wfId: string;
-  event: string;
-  actor: string;
-  tool: string;
-  status: 'SUCCESS' | 'FAILED' | 'PENDING' | 'REPLANNED';
-  result: string;
-  category: 'Planning' | 'Data Retrieval' | 'Approval' | 'Execution' | 'Failure' | 'Re-planning' | 'Verification';
-};
+import { ArrowLeft, Filter, History, Database, CheckCircle, ShieldAlert, AlertCircle, FileText, ArrowRight, RefreshCw, Loader2 } from 'lucide-react';
+import { getAllAuditEvents, AuditEvent } from '@/lib/api';
 
 export default function AuditTrail() {
   const [events, setEvents] = useState<AuditEvent[]>([]);
   const [filter, setFilter] = useState('All');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Simulated Audit Events based on the demo requirements
-    const demoRun = localStorage.getItem('demoCompleted');
-    if (demoRun === 'true') {
-      const generateTime = (offset: number) => {
-        const d = new Date();
-        d.setMinutes(d.getMinutes() - 10);
-        d.setSeconds(d.getSeconds() + offset);
-        return d.toLocaleTimeString([], { hour12: false });
-      };
-
-      setEvents([
-        { time: generateTime(0), wfId: 'WF-001', event: 'OBJECTIVE_RECEIVED', actor: 'System', tool: 'IntentParser', status: 'SUCCESS', result: 'Objective parsed successfully', category: 'Planning' },
-        { time: generateTime(2), wfId: 'WF-001', event: 'PLAN_GENERATED', actor: 'AI Planner', tool: 'LangGraph', status: 'SUCCESS', result: '10-step execution plan generated', category: 'Planning' },
-        { time: generateTime(5), wfId: 'WF-001', event: 'DATA_RETRIEVED', actor: 'System', tool: 'InvoiceDB', status: 'SUCCESS', result: '12 invoices retrieved', category: 'Data Retrieval' },
-        { time: generateTime(6), wfId: 'WF-001', event: 'DATA_RETRIEVED', actor: 'System', tool: 'CustomerDB', status: 'SUCCESS', result: '6 customer records retrieved', category: 'Data Retrieval' },
-        { time: generateTime(9), wfId: 'WF-001', event: 'CONTEXT_ANALYZED', actor: 'Decision Engine', tool: 'LLM', status: 'SUCCESS', result: '7 overdue cases evaluated', category: 'Planning' },
-        { time: generateTime(12), wfId: 'WF-001', event: 'APPROVAL_REQUESTED', actor: 'System', tool: 'ApprovalGateway', status: 'PENDING', result: '3 actions require authorization', category: 'Approval' },
-        { time: generateTime(35), wfId: 'WF-001', event: 'APPROVAL_RECEIVED', actor: 'Admin (Human)', tool: 'ApprovalGateway', status: 'SUCCESS', result: '3 actions approved', category: 'Approval' },
-        { time: generateTime(37), wfId: 'WF-001', event: 'EXECUTION_STARTED', actor: 'Execution Engine', tool: 'ActionRunner', status: 'SUCCESS', result: 'Processing 6 actions', category: 'Execution' },
-        { time: generateTime(38), wfId: 'WF-001', event: 'ACTION_EXECUTED', actor: 'System', tool: 'EmailTool', status: 'SUCCESS', result: 'INV-1001 escalation sent', category: 'Execution' },
-        { time: generateTime(41), wfId: 'WF-001', event: 'EXECUTION_FAILED', actor: 'System', tool: 'EmailTool', status: 'FAILED', result: 'Invalid primary contact (invalid@delta-logistics.example)', category: 'Failure' },
-        { time: generateTime(42), wfId: 'WF-001', event: 'FAILURE_DETECTED', actor: 'Execution Engine', tool: 'Observer', status: 'SUCCESS', result: 'Workflow paused due to action failure', category: 'Failure' },
-        { time: generateTime(44), wfId: 'WF-001', event: 'WORKFLOW_REPLANNED', actor: 'AI Planner', tool: 'LangGraph', status: 'REPLANNED', result: 'Revised plan created for INV-1004', category: 'Re-planning' },
-        { time: generateTime(46), wfId: 'WF-001', event: 'DATA_RETRIEVED', actor: 'System', tool: 'CustomerTool', status: 'SUCCESS', result: 'Alternate verified contact found', category: 'Data Retrieval' },
-        { time: generateTime(49), wfId: 'WF-001', event: 'ACTION_EXECUTED', actor: 'System', tool: 'EmailTool', status: 'SUCCESS', result: 'INV-1004 recovered action sent', category: 'Execution' },
-        { time: generateTime(52), wfId: 'WF-001', event: 'WORKFLOW_VERIFIED', actor: 'System', tool: 'Verifier', status: 'SUCCESS', result: '6/6 business actions completed', category: 'Verification' },
-        { time: generateTime(53), wfId: 'WF-001', event: 'WORKFLOW_COMPLETED', actor: 'System', tool: 'Orchestrator', status: 'SUCCESS', result: 'Objective achieved', category: 'Verification' }
-      ]);
+  const loadAudit = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await getAllAuditEvents();
+      setEvents(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch audit events from backend.');
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
-  const filters = ['All', 'Planning', 'Data Retrieval', 'Approval', 'Execution', 'Failure', 'Re-planning', 'Verification'];
+  useEffect(() => {
+    loadAudit();
+  }, [loadAudit]);
+
+  const filters = ['All', 'Workflow Started', 'Task Success', 'Approval Required', 'Workflow Paused', 'Workflow Resumed', 'Workflow Completed'];
   
-  const filteredEvents = filter === 'All' ? events : events.filter(e => e.category === filter);
+  const filteredEvents = filter === 'All' 
+    ? events 
+    : events.filter(e => e.event_type.toLowerCase().includes(filter.toLowerCase()));
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900 pb-20">
       <header className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between sticky top-0 z-50 shadow-sm">
-        <div className="flex items-center gap-6">
-          <Link href="/" className="text-slate-500 hover:text-slate-900 transition-colors">
+        <div className="flex items-center gap-4">
+          <Link href="/" className="text-slate-500 hover:text-slate-800 transition-colors p-1.5 rounded-lg hover:bg-slate-100">
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-xl font-bold flex items-center gap-2"><History className="w-5 h-5" /> Audit Trail</h1>
-            <p className="text-sm text-slate-500">Immutable record of all workflow events</p>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+              <History className="w-5 h-5 text-blue-600" />
+              Unified Audit Trail
+            </h1>
+            <p className="text-xs text-slate-500">Immutable ledger of autonomous actions, human approvals, and dynamic replans</p>
           </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-mono text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg">
+            {events.length} Events Logged
+          </span>
+          <button 
+            onClick={loadAudit}
+            title="Refresh audit log" 
+            className="p-2 border border-slate-200 bg-white hover:bg-slate-50 rounded-xl text-slate-600 transition-colors"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto w-full px-8 pt-8">
+      <main className="max-w-6xl mx-auto w-full px-8 pt-6 flex flex-col gap-6 flex-1">
         
-        {events.length === 0 ? (
-          <div className="text-center py-20 bg-white border border-slate-200 rounded-xl shadow-sm">
-            <Database className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-            <h2 className="text-xl font-bold mb-2">No workflow executed yet</h2>
-            <p className="text-slate-500 mb-6">Run the demo to populate the audit trail.</p>
-            <Link href="/" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-colors">
-              Return to Dashboard
-            </Link>
-          </div>
-        ) : (
-          <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col h-[800px]">
-            <div className="p-4 border-b border-slate-100 bg-slate-50 flex items-center gap-4">
-              <Filter className="w-4 h-4 text-slate-400" />
-              <div className="flex flex-wrap gap-2">
-                {filters.map(f => (
-                  <button 
-                    key={f} 
-                    onClick={() => setFilter(f)}
-                    className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${filter === f ? 'bg-slate-800 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}`}
-                  >
-                    {f}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              {filteredEvents.map((e, i) => (
-                <div key={i} className="flex gap-6 border-b border-slate-100 pb-6 last:border-0 last:pb-0">
-                  <div className="w-24 text-right shrink-0">
-                    <div className="font-mono text-sm font-bold text-slate-700">{e.time}</div>
-                    <div className="text-xs text-slate-400 mt-1">{e.wfId}</div>
-                  </div>
-                  
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      {e.status === 'SUCCESS' && <CheckCircle className="w-4 h-4 text-green-500" />}
-                      {e.status === 'FAILED' && <ShieldAlert className="w-4 h-4 text-red-500" />}
-                      {e.status === 'PENDING' && <AlertCircle className="w-4 h-4 text-amber-500" />}
-                      {e.status === 'REPLANNED' && <ArrowRight className="w-4 h-4 text-purple-500" />}
-                      <span className="font-bold text-sm tracking-wider">{e.event}</span>
-                      <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded">{e.category}</span>
-                    </div>
-                    
-                    <div className="grid grid-cols-3 gap-4 bg-slate-50 border border-slate-100 rounded-lg p-4 mt-3">
-                      <div>
-                        <div className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Actor / Tool</div>
-                        <div className="text-sm font-medium">{e.actor} <span className="text-slate-400">using</span> {e.tool}</div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Status</div>
-                        <div className={`text-sm font-bold ${
-                          e.status === 'SUCCESS' ? 'text-green-600' : 
-                          e.status === 'FAILED' ? 'text-red-600' : 
-                          e.status === 'REPLANNED' ? 'text-purple-600' : 'text-amber-600'
-                        }`}>
-                          {e.status}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-1">Result</div>
-                        <div className="text-sm text-slate-700">{e.result}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl flex items-center gap-2 text-sm">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+            <span>{error}</span>
           </div>
         )}
+
+        {/* FILTER BAR */}
+        <div className="flex flex-wrap items-center gap-2 bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider px-2 flex items-center gap-1.5">
+            <Filter className="w-3.5 h-3.5" /> Filter:
+          </div>
+          {filters.map(f => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                filter === f ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+
+        {/* AUDIT TABLE */}
+        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+          {isLoading && events.length === 0 ? (
+            <div className="p-16 text-center text-slate-400">
+              <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-blue-600" />
+              <div className="text-sm">Fetching audit records from database...</div>
+            </div>
+          ) : filteredEvents.length === 0 ? (
+            <div className="p-16 text-center text-slate-400">
+              <History className="w-10 h-10 mx-auto mb-2 text-slate-300" />
+              <div className="text-base font-semibold text-slate-700">No audit events match your filter</div>
+              <p className="text-xs text-slate-500 mt-1">Audit events are automatically recorded during workflow runs.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50/50 text-xs text-slate-500 uppercase font-semibold">
+                    <th className="py-3 px-4">Time</th>
+                    <th className="py-3 px-4">Workflow</th>
+                    <th className="py-3 px-4">Actor</th>
+                    <th className="py-3 px-4">Event</th>
+                    <th className="py-3 px-4">Tool</th>
+                    <th className="py-3 px-4">Summary / Metadata</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-mono text-xs">
+                  {filteredEvents.map(e => (
+                    <tr key={e.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-3 px-4 text-slate-400 whitespace-nowrap">
+                        {e.timestamp ? new Date(e.timestamp).toLocaleTimeString() : '—'}
+                      </td>
+                      <td className="py-3 px-4">
+                        <Link href={`/workflows/${e.workflow_id}`} className="text-blue-600 hover:underline">
+                          #{e.workflow_id.slice(0, 8)}
+                        </Link>
+                      </td>
+                      <td className="py-3 px-4 font-semibold text-slate-800 font-sans">
+                        {e.actor}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                          e.event_type.toLowerCase().includes('failed') ? 'bg-red-100 text-red-700' :
+                          e.event_type.toLowerCase().includes('success') || e.event_type.toLowerCase().includes('completed') ? 'bg-green-100 text-green-700' :
+                          e.event_type.toLowerCase().includes('approval') || e.event_type.toLowerCase().includes('paused') ? 'bg-amber-100 text-amber-800' :
+                          'bg-blue-100 text-blue-700'
+                        }`}>
+                          {e.event_type}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-slate-600">
+                        {e.tool ? <code className="bg-slate-100 px-1 py-0.5 rounded">{e.tool}</code> : '—'}
+                      </td>
+                      <td className="py-3 px-4 text-slate-700 font-sans text-xs max-w-md truncate">
+                        {e.summary || (e.metadata_json ? JSON.stringify(e.metadata_json) : '—')}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );

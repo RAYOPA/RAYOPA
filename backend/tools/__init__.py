@@ -20,7 +20,7 @@ registry.register_tool(ToolDefinition(
     name="sendEmail",
     description="Sends an email",
     inputSchema={"type": "object", "properties": {"recipient": {"type": "string", "description": "Email address of the recipient"}, "subject": {"type": "string", "description": "Subject of the email"}, "body": {"type": "string", "description": "Body of the email"}}, "required": ["recipient", "subject", "body"]},
-    outputSchema={}, requiresApproval=True,
+    outputSchema={}, requiresApproval=False,
     execute=send_email_execute
 ))
 registry.register_tool(ToolDefinition(

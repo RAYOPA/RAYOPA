@@ -13,7 +13,9 @@ def prepare_email_execute(input_data: Dict[str, Any], context: ToolContext) -> T
     return ToolResult(status="SUCCESS", data={"subject": subject, "body": body, "recipient": recipient, "prepared": True})
 
 def send_email_execute(input_data: Dict[str, Any], context: ToolContext) -> ToolResult:
-    recipient = input_data.get("recipient", "customer@acme.com")
+    recipient = input_data.get("recipient")
+    if not recipient:
+        return ToolResult(status="FAILED", error="Missing recipient for email sending")
     subject = input_data.get("subject", "Follow-up on Overdue Invoice")
     body = input_data.get("body", "Please settle the outstanding balance.")
         
