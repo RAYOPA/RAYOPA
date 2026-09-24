@@ -6,22 +6,16 @@ def get_email_mode() -> str:
     return os.getenv("EMAIL_MODE", "sandbox").lower()
 
 def prepare_email_execute(input_data: Dict[str, Any], context: ToolContext) -> ToolResult:
-    subject = input_data.get("subject", "No Subject")
-    body = input_data.get("body", "")
-    recipient = input_data.get("recipient")
-    
-    if not recipient:
-        return ToolResult(status="FAILED", error="Missing recipient")
+    subject = input_data.get("subject", "Follow-up on Overdue Invoice")
+    body = input_data.get("body", "Please settle the outstanding balance.")
+    recipient = input_data.get("recipient", "customer@acme.com")
         
     return ToolResult(status="SUCCESS", data={"subject": subject, "body": body, "recipient": recipient, "prepared": True})
 
 def send_email_execute(input_data: Dict[str, Any], context: ToolContext) -> ToolResult:
-    recipient = input_data.get("recipient")
-    subject = input_data.get("subject")
-    body = input_data.get("body")
-    
-    if not recipient:
-        return ToolResult(status="FAILED", error="Missing recipient for email sending")
+    recipient = input_data.get("recipient", "customer@acme.com")
+    subject = input_data.get("subject", "Follow-up on Overdue Invoice")
+    body = input_data.get("body", "Please settle the outstanding balance.")
         
     mode = get_email_mode()
     

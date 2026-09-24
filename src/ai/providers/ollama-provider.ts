@@ -44,7 +44,7 @@ export class OllamaProvider implements AIProvider {
           think: false,
           options: {
             temperature: 0.2,
-            num_predict: 512
+            num_predict: 260
           }
         })
       });
@@ -56,7 +56,28 @@ export class OllamaProvider implements AIProvider {
 
       const data = await response.json();
       const content = data.message?.content;
+      console.error(`--- RAW OLLAMA RESPONSE (${data.eval_count || 0} tokens, done_reason=${data.done_reason}) ---`);
+      console.error(content);
+
+      if (data.done_reason === 'length') {
+        throw new ValidationError("Truncated plan response: generation reached num_predict limit");
+      }
       
+      const totalMs = Math.round((data.total_duration || 0) / 1e6);
+      const loadMs = Math.round((data.load_duration || 0) / 1e6);
+      const promptEvalMs = Math.round((data.prompt_eval_duration || 0) / 1e6);
+      const evalMs = Math.round((data.eval_duration || 0) / 1e6);
+
+      console.error(`--- OLLAMA TIMING METRICS ---`);
+      console.error(`model=${this.model}`);
+      console.error(`think=false`);
+      console.error(`prompt_chars=${prompt.length + (systemInstruction ? systemInstruction.length : 0)}`);
+      console.error(`prompt_tokens_estimate=${Math.ceil((prompt.length + (systemInstruction ? systemInstruction.length : 0)) / 4)}`);
+      console.error(`prompt_eval_count=${data.prompt_eval_count || 0}`);
+      console.error(`eval_count=${data.eval_count || 0}`);
+      console.error(`total_duration_ms=${totalMs}`);
+      console.error(`load_duration_ms=${loadMs}`);
+      console.error(`prompt_eval_duration_ms=${promptEvalMs}`);
       if (!content) {
         throw new Error("Empty response from Ollama");
       }

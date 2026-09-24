@@ -8,7 +8,7 @@ def get_customer_execute(input_data: Dict[str, Any], context: ToolContext) -> To
         return ToolResult(status="FAILED", error="Missing customer_id")
         
     db = context.db
-    customer = db.query(Customer).filter(Customer.id == customer_id).first()
+    customer = db.query(Customer).filter((Customer.id == customer_id) | (Customer.name == customer_id)).first()
     
     if not customer:
         return ToolResult(status="FAILED", error="Customer not found")
@@ -28,7 +28,7 @@ def get_customer_contacts_execute(input_data: Dict[str, Any], context: ToolConte
         return ToolResult(status="FAILED", error="Missing customer_id")
         
     db = context.db
-    customer = db.query(Customer).filter(Customer.id == customer_id).first()
+    customer = db.query(Customer).filter((Customer.id == customer_id) | (Customer.name == customer_id)).first()
     
     if not customer:
         return ToolResult(status="FAILED", error="Customer not found")

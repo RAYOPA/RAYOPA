@@ -11,11 +11,13 @@ export class PlanVerifier {
     const stepIds = new Set<string>();
 
     // Pass 1: Collect step IDs and verify tools
-    for (const step of plan.steps) {
-      if (stepIds.has(step.stepId)) {
-        throw new Error(`Duplicate stepId found: ${step.stepId}`);
+    for (let i = 0; i < plan.steps.length; i++) {
+      const step = plan.steps[i];
+      const effectiveId = step.stepId || `step_${i + 1}`;
+      if (stepIds.has(effectiveId)) {
+        throw new Error(`Duplicate stepId found: ${effectiveId}`);
       }
-      stepIds.add(step.stepId);
+      stepIds.add(effectiveId);
 
       const toolDef = ToolRegistry[step.tool];
       if (!toolDef) {
@@ -26,11 +28,13 @@ export class PlanVerifier {
     }
 
     // Pass 2: Verify dependencies exist
-    for (const step of plan.steps) {
+    for (let i = 0; i < plan.steps.length; i++) {
+      const step = plan.steps[i];
+      const effectiveId = step.stepId || `step_${i + 1}`;
       if (step.dependsOn && step.dependsOn.length > 0) {
         for (const dep of step.dependsOn) {
           if (!stepIds.has(dep)) {
-            throw new Error(`Step ${step.stepId} depends on unknown step ${dep}`);
+            throw new Error(`Step ${effectiveId} depends on unknown step ${dep}`);
           }
         }
       }

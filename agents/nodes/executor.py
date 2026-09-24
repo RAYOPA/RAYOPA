@@ -10,7 +10,10 @@ logger = AuditLogger()
 
 def executor_node(state: State) -> State:
     if state.current_step_index >= len(state.plan):
-        state.status = "REPLAN"
+        if not state.failures:
+            state.status = "COMPLETED"
+        else:
+            state.status = "REPLAN"
         return state
         
     step = state.plan[state.current_step_index]
