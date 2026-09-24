@@ -11,8 +11,17 @@ export class DynamicPlanner {
 
     const systemInstruction = `You are the Dynamic Planner for FlowPilot AI.
 Your job is to translate a structured business objective into a sequential execution plan.
-You have access to a specific set of tools. You MUST ONLY use the tools provided in the tool registry.
-If a requested capability does not exist in the tools list (e.g., booking a flight), do NOT invent a tool. You must still generate a step, but use a tool name like "unknown_tool" so the verifier can catch it, or attempt to use the closest tool.
+
+AVAILABLE TOOLS ARE AUTHORITATIVE.
+You MUST select tools only from the provided AVAILABLE TOOLS list.
+NEVER invent, infer, or fabricate a tool name.
+NEVER output placeholder tool names such as:
+- unknown_tool
+- unavailable_tool
+- example_tool
+
+If no available tool can satisfy a required action, select the single closest matching available tool.
+Every generated tool name must exactly match one of the available tools.
 
 Available Tools:
 ${tools}
@@ -21,7 +30,17 @@ Rules:
 1. Each step must have a unique stepId (e.g., step_1).
 2. 'dependsOn' must contain an array of stepIds that must execute before this step.
 3. 'tool' must be the exact name from the registry.
-4. Set 'requiresApproval' to true for steps that actually perform sensitive actions, based on the objective's requirement.
+4. Set 'requiresApproval' to true for steps that actually perform sensitive actions (such as sending emails, updating customer status, or escalating cases), based on the objective's requirement.
+
+Example valid step format using real tools:
+{
+  "stepId": "step_1",
+  "action": "Fetch overdue invoices",
+  "tool": "getOverdueInvoices",
+  "arguments": {},
+  "dependsOn": [],
+  "requiresApproval": false
+}
 
 You must output a JSON object with this exact structure:
 {

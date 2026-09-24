@@ -33,7 +33,7 @@ export class OllamaProvider implements AIProvider {
     try {
       const response = await fetch(`${this.baseUrl}/api/chat`, {
         method: "POST",
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(30000),
         headers: {
           "Content-Type": "application/json"
         },
@@ -41,6 +41,7 @@ export class OllamaProvider implements AIProvider {
           model: this.model,
           messages: messages,
           stream: false,
+          think: false,
           options: {
             temperature: 0.2
           }
