@@ -5,6 +5,7 @@ import { ProviderRouter } from './providers/provider-router';
 import { ObjectiveAnalyzer } from './prompts/objective-analyzer';
 import { DynamicPlanner } from './prompts/planner';
 import { PlanVerifier } from './prompts/plan-verifier';
+import { Reflector } from './prompts/reflector';
 import { setToolRegistry } from './tools/registry';
 import { AIUnavailableError, CapabilityUnavailableError, ValidationError } from './errors';
 
@@ -13,7 +14,7 @@ import * as fs from 'fs';
 async function main() {
   try {
     const filePath = process.argv[2];
-    const mode = process.argv[3] || "all"; // analyze, plan, replan, all
+    const mode = process.argv[3] || "all"; // analyze, plan, replan, reflect, all
     
     if (!filePath) {
       throw new Error("Missing file path argument");
@@ -91,6 +92,16 @@ async function main() {
       console.log(JSON.stringify({
         status: "SUCCESS",
         steps: plan.steps
+      }));
+      return;
+    }
+    
+    if (mode === "reflect") {
+      const reflector = new Reflector(ai);
+      const reflection = await reflector.reflect(payload);
+      console.log(JSON.stringify({
+        status: "SUCCESS",
+        reflection: reflection
       }));
       return;
     }

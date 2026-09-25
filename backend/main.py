@@ -171,6 +171,15 @@ def run_orchestrator(workflow_id: str):
             db.close()
     finally:
         utils.audit_logger.AuditLogger.log_event = original_log
+        
+        # Trigger Reflection if workflow is completed or failed
+        state = load_workflow_state(workflow_id)
+        if state and state.status in ["COMPLETED", "FAILED"]:
+            from agents.nodes.reflector import post_execution_reflection
+            try:
+                post_execution_reflection(state)
+            except Exception as e:
+                print(f"Reflection failed: {e}")
 
 def resume_orchestrator(workflow_id: str):
     import utils.audit_logger
@@ -192,6 +201,15 @@ def resume_orchestrator(workflow_id: str):
             db.close()
     finally:
         utils.audit_logger.AuditLogger.log_event = original_log
+        
+        # Trigger Reflection if workflow is completed or failed
+        state = load_workflow_state(workflow_id)
+        if state and state.status in ["COMPLETED", "FAILED"]:
+            from agents.nodes.reflector import post_execution_reflection
+            try:
+                post_execution_reflection(state)
+            except Exception as e:
+                print(f"Reflection failed: {e}")
 
 @app.post("/api/workflows")
 def create_workflow(payload: Dict[str, Any], background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
@@ -242,6 +260,7 @@ def get_workflow(id: str, db: Session = Depends(get_db)):
     ai_call_count = 0
     status = wf.status
 
+    retrieval_metrics = {}
     if live_state:
         status = wf.status if wf.status in ["REJECTED", "FAILED"] else live_state.status
         current_step_index = live_state.current_step_index
@@ -249,8 +268,25 @@ def get_workflow(id: str, db: Session = Depends(get_db)):
         plan = [p.model_dump() for p in live_state.plan]
         completed_actions = [a.model_dump() for a in live_state.completed_actions]
         failures = live_state.failures
+        if hasattr(live_state, "retrieval_metrics"):
+            retrieval_metrics = live_state.retrieval_metrics
     elif wf.current_plan:
         plan = wf.current_plan if isinstance(wf.current_plan, list) else []
+
+    reflection = None
+    from .models import ExecutionMemory
+    mem = db.query(ExecutionMemory).filter(ExecutionMemory.workflow_id == id).first()
+    if mem:
+        reflection = {
+            "summary": mem.summary,
+            "successful_strategy": mem.successful_actions,
+            "failure_patterns": mem.failed_actions,
+            "recovery_strategy": mem.recovery_strategy,
+            "lessons": mem.lessons,
+            "avoid_actions": mem.avoid_actions,
+            "workflow_domain": mem.domain,
+            "applications_involved": mem.applications_used
+        }
 
     return {
         "id": wf.id,
@@ -262,6 +298,8 @@ def get_workflow(id: str, db: Session = Depends(get_db)):
         "plan": plan,
         "completed_actions": completed_actions,
         "failures": failures,
+        "retrieval_metrics": retrieval_metrics,
+        "reflection": reflection,
         "approvals": [
             {
                 "id": a.id,
@@ -423,6 +461,16 @@ def list_all_audit_events(workflow_id: Optional[str] = None, db: Session = Depen
             "timestamp": e.timestamp.isoformat() if e.timestamp else None
         })
     return res
+
+@app.get("/api/benchmark")
+def get_benchmark():
+    import os
+    import json
+    path = "tests/results/flowpilot_benchmark.json"
+    if os.path.exists(path):
+        with open(path, "r") as f:
+            return json.load(f)
+    return {}
 
 @app.get("/api/metrics")
 def get_metrics(db: Session = Depends(get_db)):

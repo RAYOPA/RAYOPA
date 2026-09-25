@@ -8,3 +8,7 @@ export async function getInvoices(): Promise<Invoice[]> {
 export async function getCustomers(): Promise<Customer[]> {
   return apiFetch<Customer[]>('/api/customers');
 }
+
+export async function getBenchmark(): Promise<any> {
+  return apiFetch<any>('/api/benchmark');
+}

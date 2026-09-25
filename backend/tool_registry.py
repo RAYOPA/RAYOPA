@@ -4,6 +4,7 @@ from typing import Callable, Any, Dict, List, Optional
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+import re
 from .models import ToolExecution, AuditEvent
 
 class ToolResult(BaseModel):
@@ -25,10 +26,52 @@ class ToolDefinition(BaseModel):
     outputSchema: Any
     requiresApproval: bool
     execute: Callable[[Any, ToolContext], ToolResult]
+    domain: Optional[str] = None
+    capabilities: Optional[List[str]] = None
+    risk_level: Optional[str] = None
+    permission_requirements: Optional[List[str]] = None
+    supported_entities: Optional[List[str]] = None
+    application: Optional[str] = None
+    required_role: Optional[str] = None
+
+class ToolRetriever:
+    def __init__(self, registry: 'ToolRegistry'):
+        self.registry = registry
+
+    def retrieve(self, objective: str, top_k: int = 5) -> List[ToolDefinition]:
+        if not objective:
+            return self.registry.list_tools()[:top_k]
+            
+        words = set(re.findall(r'\w+', objective.lower()))
+        scores = []
+        for tool in self.registry.list_tools():
+            score = 0
+            text_to_search = tool.name.lower() + " " + tool.description.lower()
+            if tool.domain:
+                text_to_search += " " + tool.domain.lower()
+            if tool.capabilities:
+                text_to_search += " " + " ".join(tool.capabilities).lower()
+            if tool.supported_entities:
+                text_to_search += " " + " ".join(tool.supported_entities).lower()
+            if tool.application:
+                text_to_search += " " + tool.application.lower()
+            
+            tool_words = set(re.findall(r'\w+', text_to_search))
+            intersection = words.intersection(tool_words)
+            score = len(intersection)
+            
+            if tool.name.lower() in objective.lower():
+                score += 2
+                
+            scores.append((score, tool))
+            
+        scores.sort(key=lambda x: x[0], reverse=True)
+        return [t[1] for t in scores[:top_k]]
 
 class ToolRegistry:
     def __init__(self):
         self._tools: Dict[str, ToolDefinition] = {}
+        self.retriever = ToolRetriever(self)
         
     def register_tool(self, tool: ToolDefinition):
         self._tools[tool.name] = tool

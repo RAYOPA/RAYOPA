@@ -3,6 +3,7 @@ import { AIProvider, AIProviderResponse } from './ai-provider';
 import { OpenRouterProvider } from './openrouter-provider';
 import { GrokProvider } from './grok-provider';
 import { OllamaProvider } from './ollama-provider';
+import { MockProvider } from './mock-provider';
 import { 
   AIQuotaExceededError,
   AIRateLimitedError,
@@ -20,6 +21,7 @@ export class ProviderRouter implements AIProvider {
 
   constructor(initialCallCount: number = 1) {
     this.providerFactories = [
+      () => new MockProvider(),
       () => new OpenRouterProvider(),
       () => new GrokProvider(),
       () => new OllamaProvider()

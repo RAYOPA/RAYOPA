@@ -18,6 +18,7 @@ from backend.models import Customer, Invoice, Workflow
 from agents.orchestrator import Orchestrator
 import agents.orchestrator as orch_module
 from utils.audit_logger import AuditLogger
+from backend.workflow_state import load_workflow_state
 import json
 
 def setup_db():
@@ -60,7 +61,7 @@ def run_canonical():
     print("Running initial workflow...")
     orchestrator.run_workflow(workflow_id=workflow_id, goal=goal)
     
-    state = orch_module.WORKFLOW_STATES.get(workflow_id)
+    state = load_workflow_state(workflow_id)
     print("Initial Run Status:", state.status)
     
     # Explicitly approve
@@ -68,7 +69,7 @@ def run_canonical():
     while state.status == "WAITING_FOR_APPROVAL" and loop_count < 15:
         print(f"\n[MANUAL APPROVAL SIMULATION] Approving step {state.current_step_index}...")
         orchestrator.resume_workflow(workflow_id=workflow_id)
-        state = orch_module.WORKFLOW_STATES[workflow_id]
+        state = load_workflow_state(workflow_id)
         loop_count += 1
         print("Status after resume:", state.status)
 

@@ -30,6 +30,18 @@ export interface FailureInfo {
   error?: string;
 }
 
+export interface Reflection {
+  summary: string;
+  successful_strategy: string[];
+  failure_patterns: string[];
+  recovery_strategy: string[];
+  lessons: string[];
+  avoid_actions: string[];
+  confidence: number;
+  workflow_domain: string;
+  applications_involved: string[];
+}
+
 export interface Workflow {
   id: string;
   objective: string;
@@ -41,6 +53,8 @@ export interface Workflow {
   completed_actions: ToolExecutionResult[];
   failures: FailureInfo[];
   approvals: Approval[];
+  retrieval_metrics?: Record<string, any>;
+  reflection?: Reflection;
   created_at: string;
   updated_at?: string;
   completed_at?: string;
