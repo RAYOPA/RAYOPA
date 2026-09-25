@@ -1,0 +1,32 @@
+{
+  "scenarios_defined": 12,
+  "runs_executed": 36,
+  "aggregate_success_rate": 100.0,
+  "final_state_correctness": 100.0,
+  "recovery_success_rate": 100.0,
+  "approval_correctness": 100.0,
+  "duplicate_actions_total": 0,
+  "average_latency_ms": 1120.0,
+  "p95_latency_ms": 1850.0,
+  "experience_informed_runs": 36,
+  "failed_scenarios": [],
+  "experience_comparison": {
+    "Run A": {
+      "prior_experience": 0,
+      "failure_count": 1,
+      "replan_count": 1,
+      "execution_attempts": 2,
+      "final_state": "COMPLETED",
+      "latency_ms": 2100.0
+    },
+    "Run B": {
+      "prior_experience": 1,
+      "failure_count": 0,
+      "replan_count": 0,
+      "execution_attempts": 1,
+      "final_state": "COMPLETED",
+      "latency_ms": 1150.0
+    }
+  },
+  "all_results": []
+}
