@@ -176,3 +176,25 @@ class Replan(Base):
     created_at = Column(DateTime, server_default=func.now())
     
     workflow = relationship("Workflow", back_populates="replans")
+
+class ExecutionMemory(Base):
+    __tablename__ = "execution_memory"
+    
+    id = Column(String, primary_key=True, index=True)
+    workflow_id = Column(String, index=True)
+    objective = Column(String, nullable=False)
+    domain = Column(String)
+    tools_selected = Column(JSON)
+    successful_actions = Column(JSON)
+    failed_actions = Column(JSON)
+    failure_reasons = Column(JSON)
+    recovery_strategy = Column(JSON)
+    applications_used = Column(JSON)
+    lessons = Column(JSON)
+    avoid_actions = Column(JSON)
+    summary = Column(String)
+    final_status = Column(String)
+    approval_outcomes = Column(JSON)
+    useful_recovery_facts = Column(JSON)
+    timestamp = Column(DateTime, server_default=func.now())
+
