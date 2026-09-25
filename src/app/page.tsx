@@ -3,7 +3,7 @@
 import { Activity, CheckCircle, AlertCircle, Clock, Workflow as WorkflowIcon, RotateCcw, ArrowRight, Server, Zap, Database, PlayCircle, PlusCircle, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect, useCallback } from 'react';
-import { getMetrics, getWorkflows, DashboardMetrics, WorkflowListItem } from '@/lib/api';
+import { getMetrics, getWorkflows, getBenchmark, DashboardMetrics, WorkflowListItem } from '@/lib/api';
 
 const defaultMetrics: DashboardMetrics = {
   invoices_analyzed: 0,
@@ -23,6 +23,7 @@ const defaultMetrics: DashboardMetrics = {
 export default function Dashboard() {
   const [metrics, setMetrics] = useState<DashboardMetrics>(defaultMetrics);
   const [workflows, setWorkflows] = useState<WorkflowListItem[]>([]);
+  const [benchmark, setBenchmark] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [backendError, setBackendError] = useState<string | null>(null);
 
@@ -30,12 +31,14 @@ export default function Dashboard() {
     setIsLoading(true);
     setBackendError(null);
     try {
-      const [m, wfList] = await Promise.all([
+      const [m, wfList, bench] = await Promise.all([
         getMetrics(),
-        getWorkflows().catch(() => [])
+        getWorkflows().catch(() => []),
+        getBenchmark().catch(() => null)
       ]);
       setMetrics(m);
       setWorkflows(wfList);
+      setBenchmark(bench);
     } catch (err) {
       setBackendError(err instanceof Error ? err.message : 'Unable to connect to FlowPilot backend server.');
     } finally {
@@ -197,6 +200,70 @@ export default function Dashboard() {
            <span className="bg-white px-3 py-1 rounded-full border border-green-200 text-green-800">1 recovered failure</span>
         </div>
       </section>
+
+      {/* EVALUATION DASHBOARD */}
+      {benchmark && benchmark.runs_executed && (
+        <section className="bg-gradient-to-br from-indigo-900 to-slate-900 border border-indigo-700 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden">
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+          <div className="relative z-10">
+            <div className="flex items-center justify-between mb-8 border-b border-indigo-500/30 pb-4">
+              <div>
+                <h2 className="text-2xl font-extrabold flex items-center gap-2">
+                  <Activity className="w-6 h-6 text-indigo-400" />
+                  Evaluation Suite Results
+                </h2>
+                <p className="text-indigo-200/70 text-sm mt-1">FlowPilot Benchmark Engine • Generalized cross-domain performance</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="bg-indigo-800/60 text-indigo-200 text-xs px-3 py-1.5 rounded-full font-mono border border-indigo-600/50">
+                  {benchmark.scenarios_defined} Scenarios
+                </span>
+                <span className="bg-indigo-800/60 text-indigo-200 text-xs px-3 py-1.5 rounded-full font-mono border border-indigo-600/50">
+                  {benchmark.runs_executed} Runs
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="bg-black/20 p-5 rounded-2xl border border-indigo-500/20 backdrop-blur-sm text-center">
+                <div className="text-xs text-indigo-300 uppercase tracking-widest font-bold mb-2">Success Rate</div>
+                <div className="text-4xl font-black text-white">{benchmark.aggregate_success_rate.toFixed(1)}%</div>
+              </div>
+              <div className="bg-black/20 p-5 rounded-2xl border border-indigo-500/20 backdrop-blur-sm text-center">
+                <div className="text-xs text-indigo-300 uppercase tracking-widest font-bold mb-2">Final-State Match</div>
+                <div className="text-4xl font-black text-green-400">{benchmark.final_state_correctness.toFixed(1)}%</div>
+              </div>
+              <div className="bg-black/20 p-5 rounded-2xl border border-indigo-500/20 backdrop-blur-sm text-center">
+                <div className="text-xs text-indigo-300 uppercase tracking-widest font-bold mb-2">Failure Recovery</div>
+                <div className="text-4xl font-black text-amber-400">{benchmark.recovery_success_rate.toFixed(1)}%</div>
+              </div>
+              <div className="bg-black/20 p-5 rounded-2xl border border-indigo-500/20 backdrop-blur-sm text-center">
+                <div className="text-xs text-indigo-300 uppercase tracking-widest font-bold mb-2">Policy Safety</div>
+                <div className="text-4xl font-black text-white">{benchmark.approval_correctness.toFixed(1)}%</div>
+              </div>
+            </div>
+            
+            <div className="mt-6 flex flex-wrap gap-4 text-sm font-medium">
+               <div className="flex items-center gap-2 bg-indigo-950/50 px-4 py-2 rounded-xl border border-indigo-500/30">
+                 <span className="text-indigo-400 text-xs uppercase tracking-wider">Duplicates</span>
+                 <span className="font-mono text-white">{benchmark.duplicate_actions_total}</span>
+               </div>
+               <div className="flex items-center gap-2 bg-indigo-950/50 px-4 py-2 rounded-xl border border-indigo-500/30">
+                 <span className="text-indigo-400 text-xs uppercase tracking-wider">Avg Latency</span>
+                 <span className="font-mono text-white">{benchmark.average_latency_ms.toFixed(0)} ms</span>
+               </div>
+               <div className="flex items-center gap-2 bg-indigo-950/50 px-4 py-2 rounded-xl border border-indigo-500/30">
+                 <span className="text-indigo-400 text-xs uppercase tracking-wider">p95 Latency</span>
+                 <span className="font-mono text-white">{benchmark.p95_latency_ms.toFixed(0)} ms</span>
+               </div>
+               <div className="flex items-center gap-2 bg-indigo-950/50 px-4 py-2 rounded-xl border border-indigo-500/30">
+                 <span className="text-indigo-400 text-xs uppercase tracking-wider">Experience Runs</span>
+                 <span className="font-mono text-white">{benchmark.experience_informed_runs}</span>
+               </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* WHY FLOWPILOT? */}
       <section>
