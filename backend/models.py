@@ -1,7 +1,16 @@
-from sqlalchemy import Column, String, Integer, Float, DateTime, Boolean, ForeignKey, JSON
+from sqlalchemy import Column, String, Integer, Float, DateTime, Boolean, ForeignKey, JSON, Index, text
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from .database import Base
+
+class User(Base):
+    __tablename__ = "users"
+    
+    id = Column(String, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True, nullable=False)
+    password_hash = Column(String, nullable=False)
+    role = Column(String, nullable=False) # admin, operator, viewer
+    created_at = Column(DateTime, server_default=func.now())
 
 class Customer(Base):
     __tablename__ = "customers"
@@ -73,6 +82,7 @@ class Workflow(Base):
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now(), server_default=func.now())
     completed_at = Column(DateTime, nullable=True)
+    execution_state = Column(JSON, nullable=True)
     
     steps = relationship("WorkflowStep", back_populates="workflow")
     tool_executions = relationship("ToolExecution", back_populates="workflow")
@@ -100,6 +110,7 @@ class ToolExecution(Base):
     
     id = Column(String, primary_key=True, index=True)
     workflow_id = Column(String, ForeignKey("workflows.id"))
+    idempotency_key = Column(String, index=True, nullable=True)
     tool_name = Column(String, nullable=False)
     input = Column(JSON)
     output = Column(JSON)
@@ -110,6 +121,16 @@ class ToolExecution(Base):
     completed_at = Column(DateTime, nullable=True)
     
     workflow = relationship("Workflow", back_populates="tool_executions")
+    
+    __table_args__ = (
+        Index(
+            "uix_tool_exec_idemp_active",
+            "idempotency_key",
+            unique=True,
+            postgresql_where=text("status IN ('SUCCESS', 'RUNNING')"),
+            sqlite_where=text("status IN ('SUCCESS', 'RUNNING')")
+        ),
+    )
 
 class AuditEvent(Base):
     __tablename__ = "audit_events"

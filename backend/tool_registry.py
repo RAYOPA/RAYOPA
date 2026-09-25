@@ -3,6 +3,7 @@ import datetime
 from typing import Callable, Any, Dict, List, Optional
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from .models import ToolExecution, AuditEvent
 
 class ToolResult(BaseModel):
@@ -46,41 +47,66 @@ class ToolRegistry:
         db: Session = context.db
         
         # Check idempotency
-        idempotency_key = f"{context.workflow_id}_{context.step_id}_{context.action_id}_{tool_name}"
-        existing_execution = db.query(ToolExecution).filter_by(
-            workflow_id=context.workflow_id,
-            tool_name=tool_name,
-            # Ideally we add action_id or idempotency_key to the schema, but we can match by input
+        idempotency_key = f"{context.workflow_id}_{context.action_id}"
+        
+        # Check if already successfully executed
+        existing_success = db.query(ToolExecution).filter_by(
+            idempotency_key=idempotency_key,
             status="SUCCESS"
-        ).filter(ToolExecution.input == input_data).first()
+        ).first()
         
-        if existing_execution:
-            return ToolResult(status="SUCCESS", data=existing_execution.output)
+        if existing_success:
+            audit_event = AuditEvent(
+                id=str(uuid.uuid4()),
+                workflow_id=context.workflow_id,
+                event_type="IDEMPOTENT_REPLAY",
+                actor="SYSTEM",
+                tool=tool_name,
+                status="SUCCESS",
+                summary=f"Idempotent replay for tool {tool_name}",
+                metadata_json={"execution_id": existing_success.id, "idempotency_key": idempotency_key}
+            )
+            db.add(audit_event)
+            db.commit()
+            return ToolResult(status="SUCCESS", data=existing_success.output, verificationMode="IDEMPOTENT")
             
-        # Create execution record
-        execution_id = str(uuid.uuid4())
-        execution = ToolExecution(
-            id=execution_id,
-            workflow_id=context.workflow_id,
-            tool_name=tool_name,
-            input=input_data,
-            status="RUNNING"
-        )
-        db.add(execution)
+        try:
+            # Create execution record
+            execution_id = str(uuid.uuid4())
+            execution = ToolExecution(
+                id=execution_id,
+                workflow_id=context.workflow_id,
+                idempotency_key=idempotency_key,
+                tool_name=tool_name,
+                input=input_data,
+                status="RUNNING"
+            )
+            db.add(execution)
+            
+            audit_event_start = AuditEvent(
+                id=str(uuid.uuid4()),
+                workflow_id=context.workflow_id,
+                event_type="TOOL_STARTED",
+                actor="SYSTEM",
+                tool=tool_name,
+                status="RUNNING",
+                summary=f"Started executing tool {tool_name}",
+                metadata_json={"execution_id": execution_id}
+            )
+            db.add(audit_event_start)
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            # If we hit IntegrityError, a SUCCESS or RUNNING record already exists
+            existing = db.query(ToolExecution).filter(
+                ToolExecution.idempotency_key == idempotency_key,
+                ToolExecution.status.in_(["SUCCESS", "RUNNING"])
+            ).first()
+            if existing and existing.status == "SUCCESS":
+                return ToolResult(status="SUCCESS", data=existing.output, verificationMode="IDEMPOTENT")
+            return ToolResult(status="FAILED", error="Concurrent execution detected")
         
-        audit_event = AuditEvent(
-            id=str(uuid.uuid4()),
-            workflow_id=context.workflow_id,
-            event_type="TOOL_STARTED",
-            actor="SYSTEM",
-            tool=tool_name,
-            status="RUNNING",
-            summary=f"Started executing tool {tool_name}",
-            metadata_json={"execution_id": execution_id}
-        )
-        db.add(audit_event)
-        db.commit()
-        
+
         # Execute tool
         try:
             result = tool.execute(input_data, context)

@@ -1,56 +1,554 @@
 {
-  "timestamp": "2026-09-25T01:39:24.807000",
-  "baseline_commit": "0d00346",
-  "all_reconciled": true,
-  "reconciliation": {
-    "approval_path": {
-      "workflow_id": "wf-recon-appr-9e4aff",
-      "path": "approval_path",
-      "final_state_status": "COMPLETED",
-      "total_audit_events": 46,
-      "lifecycle_transitions": {
-        "workflow_start": true,
-        "planning_execution": true,
-        "approval_required": true,
-        "approval_granted": true,
-        "failure": true,
-        "replan": true,
-        "recovery": true,
-        "completion": true
+  "approved_path": {
+    "workflow_id": "c5bf1e8a-91a3-424d-b393-37c198ebdcde",
+    "final_status": "COMPLETED",
+    "approved": true,
+    "chronology": [
+      {
+        "type": "AuditEvent",
+        "event": "Workflow Started",
+        "summary": "{'goal': 'Process INV-1002 and explicitly ask for approval.'}",
+        "tool": null,
+        "status": null,
+        "timestamp": "2026-09-25T04:33:02"
       },
-      "all_transitions_present": true,
-      "timestamp_monotonic": true,
-      "cross_layer_reconciliation": {
-        "state_completed_actions": 7,
-        "audit_task_success_events": 7,
-        "approval_records": 3,
-        "approved_records": 3,
-        "aligned": true
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_STARTED",
+        "summary": "Started executing tool getOverdueInvoices",
+        "tool": "getOverdueInvoices",
+        "status": "RUNNING",
+        "timestamp": "2026-09-25T04:33:23"
       },
-      "pass": true
-    },
-    "rejection_path": {
-      "workflow_id": "wf-recon-rej-5aa028",
-      "path": "rejection_path",
-      "final_state_status": "REJECTED",
-      "total_audit_events": 22,
-      "lifecycle_transitions": {
-        "workflow_start": true,
-        "planning_execution": true,
-        "approval_required": true,
-        "approval_rejected": true,
-        "no_further_execution": true
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_COMPLETED",
+        "summary": "Tool getOverdueInvoices finished with status SUCCESS",
+        "tool": "getOverdueInvoices",
+        "status": "SUCCESS",
+        "timestamp": "2026-09-25T04:33:23"
       },
-      "all_transitions_present": true,
-      "timestamp_monotonic": true,
-      "cross_layer_reconciliation": {
-        "completed_actions_before_rejection": 1,
-        "rejected_action_executed": false,
-        "db_workflow_status": "REJECTED",
-        "db_approval_status": "REJECTED",
-        "aligned": true
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_STARTED",
+        "summary": "Started executing tool getCustomer",
+        "tool": "getCustomer",
+        "status": "RUNNING",
+        "timestamp": "2026-09-25T04:33:23"
       },
-      "pass": true
-    }
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_COMPLETED",
+        "summary": "Tool getCustomer finished with status SUCCESS",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "timestamp": "2026-09-25T04:33:23"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_STARTED",
+        "summary": "Started executing tool getCustomer",
+        "tool": "getCustomer",
+        "status": "RUNNING",
+        "timestamp": "2026-09-25T04:33:23"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_COMPLETED",
+        "summary": "Tool getCustomer finished with status SUCCESS",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "timestamp": "2026-09-25T04:33:23"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_STARTED",
+        "summary": "Started executing tool getCustomer",
+        "tool": "getCustomer",
+        "status": "RUNNING",
+        "timestamp": "2026-09-25T04:33:23"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_COMPLETED",
+        "summary": "Tool getCustomer finished with status SUCCESS",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "timestamp": "2026-09-25T04:33:23"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_STARTED",
+        "summary": "Started executing tool getCustomer",
+        "tool": "getCustomer",
+        "status": "RUNNING",
+        "timestamp": "2026-09-25T04:33:23"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_COMPLETED",
+        "summary": "Tool getCustomer finished with status SUCCESS",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "timestamp": "2026-09-25T04:33:23"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_STARTED",
+        "summary": "Started executing tool getCustomer",
+        "tool": "getCustomer",
+        "status": "RUNNING",
+        "timestamp": "2026-09-25T04:33:23"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_COMPLETED",
+        "summary": "Tool getCustomer finished with status SUCCESS",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "timestamp": "2026-09-25T04:33:23"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_STARTED",
+        "summary": "Started executing tool getCustomer",
+        "tool": "getCustomer",
+        "status": "RUNNING",
+        "timestamp": "2026-09-25T04:33:23"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_COMPLETED",
+        "summary": "Tool getCustomer finished with status SUCCESS",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "timestamp": "2026-09-25T04:33:23"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_STARTED",
+        "summary": "Started executing tool getCustomer",
+        "tool": "getCustomer",
+        "status": "RUNNING",
+        "timestamp": "2026-09-25T04:33:23"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_COMPLETED",
+        "summary": "Tool getCustomer finished with status SUCCESS",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "timestamp": "2026-09-25T04:33:23"
+      },
+      {
+        "type": "ToolExecution",
+        "tool": "getOverdueInvoices",
+        "status": "SUCCESS",
+        "error": null,
+        "timestamp": "2026-09-25T04:33:23"
+      },
+      {
+        "type": "ToolExecution",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "error": null,
+        "timestamp": "2026-09-25T04:33:23"
+      },
+      {
+        "type": "ToolExecution",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "error": null,
+        "timestamp": "2026-09-25T04:33:23"
+      },
+      {
+        "type": "ToolExecution",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "error": null,
+        "timestamp": "2026-09-25T04:33:23"
+      },
+      {
+        "type": "ToolExecution",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "error": null,
+        "timestamp": "2026-09-25T04:33:23"
+      },
+      {
+        "type": "ToolExecution",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "error": null,
+        "timestamp": "2026-09-25T04:33:23"
+      },
+      {
+        "type": "ToolExecution",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "error": null,
+        "timestamp": "2026-09-25T04:33:23"
+      },
+      {
+        "type": "ToolExecution",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "error": null,
+        "timestamp": "2026-09-25T04:33:23"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "Approval Required",
+        "summary": "Execute sendEmail",
+        "tool": "sendEmail",
+        "status": null,
+        "timestamp": "2026-09-25T04:33:31"
+      },
+      {
+        "type": "Approval",
+        "action": "sendEmail",
+        "status": "APPROVED",
+        "timestamp": "2026-09-25T04:33:31"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "Workflow Paused",
+        "summary": "{'status': 'WAITING_FOR_APPROVAL'}",
+        "tool": null,
+        "status": "WAITING_FOR_APPROVAL",
+        "timestamp": "2026-09-25T04:33:32"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "Action Approved",
+        "summary": "Action approved by admin",
+        "tool": "sendEmail",
+        "status": "APPROVED",
+        "timestamp": "2026-09-25T04:33:33"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "Workflow Resumed",
+        "summary": "{'workflow_id': 'c5bf1e8a-91a3-424d-b393-37c198ebdcde'}",
+        "tool": null,
+        "status": null,
+        "timestamp": "2026-09-25T04:33:33"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "Executing Task",
+        "summary": "{'tool': 'sendEmail', 'arguments': {'recipient': 'beta@acme.com'}}",
+        "tool": "sendEmail",
+        "status": null,
+        "timestamp": "2026-09-25T04:33:33"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_STARTED",
+        "summary": "Started executing tool sendEmail",
+        "tool": "sendEmail",
+        "status": "RUNNING",
+        "timestamp": "2026-09-25T04:33:33"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_COMPLETED",
+        "summary": "Tool sendEmail finished with status SUCCESS",
+        "tool": "sendEmail",
+        "status": "SUCCESS",
+        "timestamp": "2026-09-25T04:33:33"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "Task Success",
+        "summary": "{'tool': 'sendEmail', 'result': {'message_id': 'sim-e23d461e-6a0e-47e0-82c2-3c1b27194c9a'}}",
+        "tool": "sendEmail",
+        "status": null,
+        "timestamp": "2026-09-25T04:33:33"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "Executing Task",
+        "summary": "{'tool': 'verifyAction', 'arguments': {'action': 'monitor'}}",
+        "tool": "verifyAction",
+        "status": null,
+        "timestamp": "2026-09-25T04:33:33"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_STARTED",
+        "summary": "Started executing tool verifyAction",
+        "tool": "verifyAction",
+        "status": "RUNNING",
+        "timestamp": "2026-09-25T04:33:33"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_COMPLETED",
+        "summary": "Tool verifyAction finished with status SUCCESS",
+        "tool": "verifyAction",
+        "status": "SUCCESS",
+        "timestamp": "2026-09-25T04:33:33"
+      },
+      {
+        "type": "ToolExecution",
+        "tool": "sendEmail",
+        "status": "SUCCESS",
+        "error": null,
+        "timestamp": "2026-09-25T04:33:33"
+      },
+      {
+        "type": "ToolExecution",
+        "tool": "verifyAction",
+        "status": "SUCCESS",
+        "error": null,
+        "timestamp": "2026-09-25T04:33:33"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "Task Success",
+        "summary": "{'tool': 'verifyAction', 'result': {'verified': True, 'action': 'monitor'}}",
+        "tool": "verifyAction",
+        "status": null,
+        "timestamp": "2026-09-25T04:33:34"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "Workflow Completed",
+        "summary": "{'items_processed': 2}",
+        "tool": null,
+        "status": null,
+        "timestamp": "2026-09-25T04:33:34"
+      }
+    ]
+  },
+  "rejected_path": {
+    "workflow_id": "beac1a65-4c63-437a-b8d6-75e0465481ce",
+    "final_status": "REJECTED",
+    "approved": false,
+    "chronology": [
+      {
+        "type": "AuditEvent",
+        "event": "Workflow Started",
+        "summary": "{'goal': 'Process INV-1002 and explicitly ask for approval.'}",
+        "tool": null,
+        "status": null,
+        "timestamp": "2026-09-25T04:33:35"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_STARTED",
+        "summary": "Started executing tool getOverdueInvoices",
+        "tool": "getOverdueInvoices",
+        "status": "RUNNING",
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_COMPLETED",
+        "summary": "Tool getOverdueInvoices finished with status SUCCESS",
+        "tool": "getOverdueInvoices",
+        "status": "SUCCESS",
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_STARTED",
+        "summary": "Started executing tool getCustomer",
+        "tool": "getCustomer",
+        "status": "RUNNING",
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_COMPLETED",
+        "summary": "Tool getCustomer finished with status SUCCESS",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_STARTED",
+        "summary": "Started executing tool getCustomer",
+        "tool": "getCustomer",
+        "status": "RUNNING",
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_COMPLETED",
+        "summary": "Tool getCustomer finished with status SUCCESS",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_STARTED",
+        "summary": "Started executing tool getCustomer",
+        "tool": "getCustomer",
+        "status": "RUNNING",
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_COMPLETED",
+        "summary": "Tool getCustomer finished with status SUCCESS",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_STARTED",
+        "summary": "Started executing tool getCustomer",
+        "tool": "getCustomer",
+        "status": "RUNNING",
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_COMPLETED",
+        "summary": "Tool getCustomer finished with status SUCCESS",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_STARTED",
+        "summary": "Started executing tool getCustomer",
+        "tool": "getCustomer",
+        "status": "RUNNING",
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_COMPLETED",
+        "summary": "Tool getCustomer finished with status SUCCESS",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_STARTED",
+        "summary": "Started executing tool getCustomer",
+        "tool": "getCustomer",
+        "status": "RUNNING",
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_COMPLETED",
+        "summary": "Tool getCustomer finished with status SUCCESS",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_STARTED",
+        "summary": "Started executing tool getCustomer",
+        "tool": "getCustomer",
+        "status": "RUNNING",
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "TOOL_COMPLETED",
+        "summary": "Tool getCustomer finished with status SUCCESS",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "ToolExecution",
+        "tool": "getOverdueInvoices",
+        "status": "SUCCESS",
+        "error": null,
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "ToolExecution",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "error": null,
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "ToolExecution",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "error": null,
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "ToolExecution",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "error": null,
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "ToolExecution",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "error": null,
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "ToolExecution",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "error": null,
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "ToolExecution",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "error": null,
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "ToolExecution",
+        "tool": "getCustomer",
+        "status": "SUCCESS",
+        "error": null,
+        "timestamp": "2026-09-25T04:33:42"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "Approval Required",
+        "summary": "Execute sendEmail",
+        "tool": "sendEmail",
+        "status": null,
+        "timestamp": "2026-09-25T04:33:50"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "Workflow Paused",
+        "summary": "{'status': 'WAITING_FOR_APPROVAL'}",
+        "tool": null,
+        "status": "WAITING_FOR_APPROVAL",
+        "timestamp": "2026-09-25T04:33:50"
+      },
+      {
+        "type": "Approval",
+        "action": "sendEmail",
+        "status": "REJECTED",
+        "timestamp": "2026-09-25T04:33:50"
+      },
+      {
+        "type": "AuditEvent",
+        "event": "Action Rejected",
+        "summary": "Operator rejected action: sendEmail",
+        "tool": "sendEmail",
+        "status": "REJECTED",
+        "timestamp": "2026-09-25T04:33:51"
+      }
+    ]
   }
 }

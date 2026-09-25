@@ -60,28 +60,40 @@ def run_canonical():
     print("Running initial workflow...")
     orchestrator.run_workflow(workflow_id=workflow_id, goal=goal)
     
-    state = orch_module.WORKFLOW_STATES.get(workflow_id)
-    print("Initial Run Status:", state.status)
+    from backend.workflow_state import load_workflow_state
+    state = load_workflow_state(workflow_id)
+    print("Initial Run Status:", state.status if state else "UNKNOWN")
     
     # Explicitly approve
     loop_count = 0
-    while state.status == "WAITING_FOR_APPROVAL" and loop_count < 15:
+    while state and state.status == "WAITING_FOR_APPROVAL" and loop_count < 15:
         print(f"\n[MANUAL APPROVAL SIMULATION] Approving step {state.current_step_index}...")
+        
+        # Approve in DB
+        session = SessionLocal()
+        from backend.models import Approval
+        approvals = session.query(Approval).filter_by(workflow_id=workflow_id, status="PENDING").all()
+        for a in approvals:
+            a.status = "APPROVED"
+        session.commit()
+        session.close()
+        
         orchestrator.resume_workflow(workflow_id=workflow_id)
-        state = orch_module.WORKFLOW_STATES[workflow_id]
+        state = load_workflow_state(workflow_id)
         loop_count += 1
-        print("Status after resume:", state.status)
+        print("Status after resume:", state.status if state else "UNKNOWN")
 
     end_time = time.time()
     
     print("\n--- FINAL DAY 4 REPORT DATA ---")
-    print("Final Status:", state.status)
-    print("AI Calls Used:", state.ai_call_count)
-    print("Latency:", round(end_time - start_time, 2), "s")
-    
-    print("\nCompleted Actions:")
-    for a in state.completed_actions:
-        print(f"- {a.tool_name}: {a.arguments}")
+    if state:
+        print("Final Status:", state.status)
+        print("AI Calls Used:", state.ai_call_count)
+        print("Latency:", round(end_time - start_time, 2), "s")
+        
+        print("\nCompleted Actions:")
+        for a in state.completed_actions:
+            print(f"- {a.tool_name}: {a.arguments}")
         
     print("\nFailures:")
     for f in state.failures:

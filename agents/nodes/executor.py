@@ -32,7 +32,7 @@ def executor_node(state: State) -> State:
         ctx = ToolContext(
             workflow_id=state.workflow_id,
             step_id=f"step-{state.current_step_index}",
-            action_id=str(uuid.uuid4()),
+            action_id=step.id,
             db=db
         )
         

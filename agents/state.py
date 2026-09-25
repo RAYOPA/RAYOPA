@@ -1,5 +1,6 @@
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
+import uuid
 
 class ToolExecutionResult(BaseModel):
     tool_name: str
@@ -8,6 +9,7 @@ class ToolExecutionResult(BaseModel):
     status: str
 
 class PlanStep(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Stable idempotency identity for the step")
     tool: str = Field(..., description="The name of the tool to execute")
     arguments: Dict[str, Any] = Field(default_factory=dict, description="The arguments for the tool")
     reason: str = Field(..., description="Reason for executing this tool")

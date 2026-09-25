@@ -12,6 +12,7 @@ import {
   getWorkflow, getWorkflowEvents, approveWorkflow, rejectWorkflow,
   Workflow, AuditEvent, Approval
 } from '@/lib/api';
+import { getUser } from '@/lib/auth';
 
 export default function WorkflowControlCenter({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -220,21 +221,29 @@ export default function WorkflowControlCenter({ params }: { params: Promise<{ id
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={() => handleReject(pendingApprovals[0]?.id)}
-                  disabled={isApproving}
-                  className="px-4 py-2 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
-                >
-                  Reject
-                </button>
-                <button
-                  onClick={() => handleApprove(pendingApprovals[0]?.id)}
-                  disabled={isApproving}
-                  className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-bold transition-all shadow-md shadow-amber-600/20 flex items-center gap-2 disabled:opacity-50"
-                >
-                  {isApproving ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                  Approve & Resume Execution
-                </button>
+                {getUser()?.role !== 'viewer' ? (
+                  <>
+                    <button
+                      onClick={() => handleReject(pendingApprovals[0]?.id)}
+                      disabled={isApproving}
+                      className="px-4 py-2 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
+                    >
+                      Reject
+                    </button>
+                    <button
+                      onClick={() => handleApprove(pendingApprovals[0]?.id)}
+                      disabled={isApproving}
+                      className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-bold transition-all shadow-md shadow-amber-600/20 flex items-center gap-2 disabled:opacity-50"
+                    >
+                      {isApproving ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                      Approve & Resume Execution
+                    </button>
+                  </>
+                ) : (
+                  <div className="px-4 py-2 bg-slate-100 text-slate-500 rounded-xl text-sm italic border border-slate-200">
+                    Your viewer role does not have permission to approve or reject actions.
+                  </div>
+                )}
               </div>
             </div>
           </div>

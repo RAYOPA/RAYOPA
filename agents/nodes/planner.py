@@ -106,7 +106,7 @@ def planner_node(state: State) -> State:
     import uuid
     
     db = SessionLocal()
-    ctx = ToolContext(workflow_id=state.workflow_id, step_id="gather", action_id=str(uuid.uuid4()), db=db)
+    ctx = ToolContext(workflow_id=state.workflow_id, step_id="gather", action_id="gather_invoices", db=db)
     
     # We fetch overdue invoices (which was standard behavior based on conditions)
     inv_res = registry.execute_tool("getOverdueInvoices", {}, ctx)
@@ -122,7 +122,8 @@ def planner_node(state: State) -> State:
 
     for inv in invoices:
         if float(inv.get("amount", 0)) >= required_amount:
-            cust_res = registry.execute_tool("getCustomer", {"customer_id": inv["customer_id"]}, ctx)
+            cust_ctx = ToolContext(workflow_id=state.workflow_id, step_id="gather", action_id=f"gather_cust_{inv['customer_id']}", db=db)
+            cust_res = registry.execute_tool("getCustomer", {"customer_id": inv["customer_id"]}, cust_ctx)
             c_data = cust_res.data if (cust_res.status == "SUCCESS" and cust_res.data) else {}
             
             compact_case = {

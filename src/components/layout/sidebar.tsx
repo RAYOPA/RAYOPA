@@ -21,6 +21,23 @@ const navigation = [
 ];
 
 export function Sidebar() {
+  if (typeof window !== 'undefined') {
+    setTimeout(() => {
+      const userStr = localStorage.getItem('user');
+      if (!userStr && !window.location.pathname.startsWith('/login')) {
+        window.location.href = '/login';
+      } else if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          const nameEl = document.querySelector('.user-name');
+          const roleEl = document.querySelector('.user-role');
+          if (nameEl) nameEl.textContent = user.username;
+          if (roleEl) roleEl.textContent = user.role;
+        } catch(e) {}
+      }
+    }, 50);
+  }
+
   return (
     <div className="flex flex-col w-64 bg-slate-900 h-screen border-r border-slate-800">
       <div className="flex items-center h-16 px-6 border-b border-slate-800 bg-slate-950">
@@ -29,6 +46,26 @@ export function Sidebar() {
           FlowPilot AI
         </span>
       </div>
+      
+      <div className="px-6 py-4 border-b border-slate-800 flex justify-between items-center">
+        <div id="user-info" className="text-sm">
+          <div className="text-slate-300 font-medium user-name">User</div>
+          <div className="text-xs text-slate-500 user-role uppercase font-bold tracking-wider">Role</div>
+        </div>
+        <button 
+          className="text-xs bg-slate-800 text-slate-300 px-2 py-1 rounded hover:bg-slate-700"
+          onClick={() => {
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('auth_token');
+              localStorage.removeItem('user');
+              window.location.href = '/login';
+            }
+          }}
+        >
+          Logout
+        </button>
+      </div>
+
       <div className="flex flex-col flex-1 overflow-y-auto">
         <nav className="flex-1 px-4 py-6 space-y-2">
           {navigation.map((item) => {

@@ -10,10 +10,11 @@ import datetime
 
 # Add root directory to path to import agents
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from agents.orchestrator import Orchestrator, WORKFLOW_STATES
-
+from agents.orchestrator import Orchestrator
+from backend.workflow_state import load_workflow_state, save_workflow_state
 from .database import get_db, Base, engine, SessionLocal
 from .models import Workflow, AuditEvent, Approval, Invoice, Customer, Payment, Communication, ToolExecution, Replan
+from .auth import router as auth_router, User, get_password_hash, get_current_user, require_role
 from .tool_registry import ToolContext
 from .tools import registry
 
@@ -22,10 +23,13 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="FlowPilot Backend API")
 
+app.include_router(auth_router)
+
 # Enable CORS for frontend integration
+frontend_origin = os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[frontend_origin],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,6 +37,13 @@ app.add_middleware(
 
 def seed_initial_data(db: Session):
     try:
+        if db.query(User).count() == 0:
+            u1 = User(id=str(uuid.uuid4()), username="admin", password_hash=get_password_hash(os.getenv("DEMO_ADMIN_PASSWORD", "admin123")), role="admin")
+            u2 = User(id=str(uuid.uuid4()), username="operator", password_hash=get_password_hash(os.getenv("DEMO_OPERATOR_PASSWORD", "operator123")), role="operator")
+            u3 = User(id=str(uuid.uuid4()), username="viewer", password_hash=get_password_hash(os.getenv("DEMO_VIEWER_PASSWORD", "viewer123")), role="viewer")
+            db.add_all([u1, u2, u3])
+            db.commit()
+
         if db.query(Customer).count() == 0:
             c1 = Customer(id="cust-1", name="Alpha Corp", email="alpha@acme.com")
             c2 = Customer(id="cust-2", name="Beta Inc", email="beta@acme.com")
@@ -203,7 +214,7 @@ def list_workflows(db: Session = Depends(get_db)):
     workflows = db.query(Workflow).order_by(Workflow.created_at.desc()).all()
     res = []
     for wf in workflows:
-        live = WORKFLOW_STATES.get(wf.id)
+        live = load_workflow_state(wf.id)
         current_status = wf.status if wf.status in ["REJECTED", "FAILED"] else (live.status if live else wf.status)
         res.append({
             "id": wf.id,
@@ -221,7 +232,7 @@ def get_workflow(id: str, db: Session = Depends(get_db)):
     if not wf:
         raise HTTPException(status_code=404, detail="Workflow not found")
 
-    live_state = WORKFLOW_STATES.get(id)
+    live_state = load_workflow_state(id)
     approvals = db.query(Approval).filter(Approval.workflow_id == id).all()
 
     completed_actions = []
@@ -309,7 +320,7 @@ def list_approvals(status: Optional[str] = None, db: Session = Depends(get_db)):
     return res
 
 @app.post("/api/workflows/{id}/approve")
-def approve_action(id: str, payload: Dict[str, Any] = None, background_tasks: BackgroundTasks = None, db: Session = Depends(get_db)):
+def approve_action(id: str, payload: Dict[str, Any] = None, background_tasks: BackgroundTasks = None, db: Session = Depends(get_db), current_user: User = Depends(require_role(["admin", "operator"]))):
     payload = payload or {}
     approval_id = payload.get("approval_id")
 
@@ -320,8 +331,9 @@ def approve_action(id: str, payload: Dict[str, Any] = None, background_tasks: Ba
         approval = query.filter(Approval.status == "PENDING").order_by(Approval.requested_at.desc()).first()
 
     if approval:
+        actor_name = current_user.username
         approval.status = "APPROVED"
-        approval.approved_by = payload.get("actor", "USER")
+        approval.approved_by = actor_name
         approval.approved_at = func.now()
         db.commit()
 
@@ -329,10 +341,10 @@ def approve_action(id: str, payload: Dict[str, Any] = None, background_tasks: Ba
             id=str(uuid.uuid4()),
             workflow_id=id,
             event_type="Action Approved",
-            actor="HumanInTheLoop",
+            actor=actor_name,
             tool=approval.action,
             status="APPROVED",
-            summary=f"Action approved by {payload.get('actor', 'USER')}",
+            summary=f"Action approved by {actor_name}",
             metadata_json=payload
         )
         db.add(db_event)
@@ -351,7 +363,7 @@ def approve_action(id: str, payload: Dict[str, Any] = None, background_tasks: Ba
     return {"status": "APPROVED", "workflow_id": id}
 
 @app.post("/api/workflows/{id}/reject")
-def reject_action(id: str, payload: Dict[str, Any] = None, db: Session = Depends(get_db)):
+def reject_action(id: str, payload: Dict[str, Any] = None, db: Session = Depends(get_db), current_user: User = Depends(require_role(["admin", "operator"]))):
     payload = payload or {}
     approval_id = payload.get("approval_id")
 
@@ -362,6 +374,7 @@ def reject_action(id: str, payload: Dict[str, Any] = None, db: Session = Depends
         approval = query.filter(Approval.status == "PENDING").order_by(Approval.requested_at.desc()).first()
 
     if approval:
+        actor_name = current_user.username
         approval.status = "REJECTED"
         db.commit()
 
@@ -369,7 +382,7 @@ def reject_action(id: str, payload: Dict[str, Any] = None, db: Session = Depends
             id=str(uuid.uuid4()),
             workflow_id=id,
             event_type="Action Rejected",
-            actor="HumanInTheLoop",
+            actor=actor_name,
             tool=approval.action,
             status="REJECTED",
             summary=f"Operator rejected action: {approval.action}",
@@ -383,8 +396,10 @@ def reject_action(id: str, payload: Dict[str, Any] = None, db: Session = Depends
         wf.status = "REJECTED"
         db.commit()
 
-    if id in WORKFLOW_STATES:
-        WORKFLOW_STATES[id].status = "REJECTED"
+    live_state = load_workflow_state(id)
+    if live_state:
+        live_state.status = "REJECTED"
+        save_workflow_state(id, live_state)
 
     return {"status": "REJECTED", "workflow_id": id}
 
@@ -419,10 +434,11 @@ def get_metrics(db: Session = Depends(get_db)):
     approved_count = db.query(Approval).filter(Approval.status == "APPROVED").count()
     rejected_count = db.query(Approval).filter(Approval.status == "REJECTED").count()
 
-    # Calculate from live states or DB
     active_state = None
-    if WORKFLOW_STATES:
-        active_state = list(WORKFLOW_STATES.values())[-1]
+    # Let's get the latest active workflow
+    latest_wf = db.query(Workflow).order_by(Workflow.created_at.desc()).first()
+    if latest_wf:
+        active_state = load_workflow_state(latest_wf.id)
 
     successful_actions = 0
     failed_attempts = 0
@@ -465,7 +481,7 @@ def get_metrics(db: Session = Depends(get_db)):
     }
 
 @app.post("/api/workflows/{id}/replan")
-def trigger_replan(id: str, payload: Dict[str, Any], db: Session = Depends(get_db)):
+def trigger_replan(id: str, payload: Dict[str, Any], db: Session = Depends(get_db), current_user: User = Depends(require_role(["admin", "operator"]))):
     replan = Replan(
         id=str(uuid.uuid4()),
         workflow_id=id,
@@ -478,7 +494,7 @@ def trigger_replan(id: str, payload: Dict[str, Any], db: Session = Depends(get_d
     return {"status": "REPLAN_LOGGED", "replan_id": replan.id}
 
 @app.post("/api/workflows/{id}/execute-tool")
-def execute_tool(id: str, payload: Dict[str, Any], db: Session = Depends(get_db)):
+def execute_tool(id: str, payload: Dict[str, Any], db: Session = Depends(get_db), current_user: User = Depends(require_role(["admin", "operator"]))):
     tool_name = payload.get("tool_name")
     input_data = payload.get("input_data", {})
     step_id = payload.get("step_id", "step-0")

@@ -4,9 +4,9 @@ from utils.audit_logger import AuditLogger
 
 logger = AuditLogger()
 
-# In-memory store for graph states
-WORKFLOW_STATES = {}
+from backend.workflow_state import save_workflow_state, load_workflow_state
 
+# In-memory store removed: WORKFLOW_STATES = {}
 class Orchestrator:
     def __init__(self):
         self.graph = create_workflow_graph()
@@ -23,9 +23,10 @@ class Orchestrator:
                 for k, v in event.items():
                     if isinstance(v, dict):
                         v = State(**v)
-                    WORKFLOW_STATES[workflow_id] = v
+                    # Persist state
+                    save_workflow_state(workflow_id, v)
             
-            final_state = WORKFLOW_STATES.get(workflow_id, state)
+            final_state = load_workflow_state(workflow_id) or state
             
             if isinstance(final_state, dict):
                 final_state = State(**final_state)
@@ -43,10 +44,10 @@ class Orchestrator:
             raise e
             
     def resume_workflow(self, workflow_id: str):
-        if workflow_id not in WORKFLOW_STATES:
-            raise ValueError("Workflow not found in memory")
+        state = load_workflow_state(workflow_id)
+        if state is None:
+            raise ValueError("Workflow not found in database")
             
-        state = WORKFLOW_STATES[workflow_id]
         if state.status == "WAITING_FOR_APPROVAL":
             state.status = "APPROVED"
             
@@ -57,9 +58,9 @@ class Orchestrator:
                 for k, v in event.items():
                     if isinstance(v, dict):
                         v = State(**v)
-                    WORKFLOW_STATES[workflow_id] = v
+                    save_workflow_state(workflow_id, v)
                     
-            final_state = WORKFLOW_STATES.get(workflow_id, state)
+            final_state = load_workflow_state(workflow_id) or state
             
             if isinstance(final_state, dict):
                 final_state = State(**final_state)

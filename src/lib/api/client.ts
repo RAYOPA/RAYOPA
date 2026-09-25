@@ -19,6 +19,13 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
   if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
   }
+  
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+  }
 
   try {
     const response = await fetch(url, {
