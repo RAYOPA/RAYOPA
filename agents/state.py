@@ -25,3 +25,5 @@ class State(BaseModel):
     status: str = Field(default="PLAN")
     context: Dict[str, Any] = Field(default_factory=dict)
     ai_call_count: int = Field(default=0)
+    retrieval_metrics: Dict[str, Any] = Field(default_factory=dict)
+

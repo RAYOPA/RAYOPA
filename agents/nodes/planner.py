@@ -5,11 +5,12 @@ from typing import List, Dict, Any
 from agents.state import State, PlanStep
 from backend.tools import registry
 
-def get_tools_dictionary() -> Dict[str, Any]:
+def get_tools_dictionary(tools: List[Any] = None) -> Dict[str, Any]:
     tools_dict = {}
-    for tool_name, tool_def in registry._tools.items():
-        tools_dict[tool_name] = {
-            "name": tool_name,
+    tools_to_use = tools if tools is not None else registry.list_tools()
+    for tool_def in tools_to_use:
+        tools_dict[tool_def.name] = {
+            "name": tool_def.name,
             "description": tool_def.description,
             "inputSchema": tool_def.inputSchema,
             "requiresApproval": tool_def.requiresApproval
@@ -54,7 +55,8 @@ def planner_node(state: State) -> State:
     if state.status in ["EXECUTE", "APPROVED"] and not state.failures:
         return state
         
-    tools_dict = get_tools_dictionary()
+    retrieved_tools = registry.retriever.retrieve(state.objective, top_k=10)
+    tools_dict = get_tools_dictionary(retrieved_tools)
     
     if state.failures:
         state.ai_call_count += 1
@@ -155,9 +157,28 @@ def planner_node(state: State) -> State:
     
     # Omit alt_contact in initial plan context so primary email is evaluated first
     initial_cases = [{k: v for k, v in c.items() if k != "alt_contact"} for c in gathered_cases]
+    
+    from backend.execution_memory import memory_layer
+    experiences = memory_layer.retrieve_relevant_experience(state.objective, top_k=2)
+    formatted_experiences = []
+    for exp in experiences:
+        formatted_experiences.append({
+            "known_successful_strategy": exp.get("successful_actions", []),
+            "known_failure_pattern": exp.get("failure_patterns", []),
+            "known_recovery_strategy": exp.get("recovery_strategy", [])
+        })
+        
     initial_context = {
         "cases": initial_cases,
-        "policy": compact_policy
+        "policy": compact_policy,
+        "previous_relevant_experience": formatted_experiences
+    }
+    
+    state.retrieval_metrics = {
+        "tools_available": len(registry.list_tools()),
+        "tools_retrieved": len(retrieved_tools),
+        "top_k_tools": [t.name for t in retrieved_tools],
+        "historical_experiences_retrieved": len(experiences)
     }
 
     # 3. Plan (Batch AI)

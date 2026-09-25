@@ -5,6 +5,7 @@ from utils.audit_logger import AuditLogger
 logger = AuditLogger()
 
 from backend.workflow_state import save_workflow_state, load_workflow_state
+from backend.execution_memory import memory_layer
 
 # In-memory store removed: WORKFLOW_STATES = {}
 class Orchestrator:
@@ -33,10 +34,12 @@ class Orchestrator:
             
             if final_state.status == "COMPLETED":
                 logger.log_event("Orchestrator", "Workflow Completed", {"items_processed": len(final_state.completed_actions)})
+                memory_layer.save_memory(final_state)
             elif final_state.status == "WAITING_FOR_APPROVAL":
                 logger.log_event("Orchestrator", "Workflow Paused", {"status": "WAITING_FOR_APPROVAL"})
             elif final_state.status == "FAILED":
                 logger.log_event("Orchestrator", "Workflow Failed", {"failures": final_state.failures})
+                memory_layer.save_memory(final_state)
                 
             return []
         except Exception as e:
@@ -67,10 +70,12 @@ class Orchestrator:
                 
             if final_state.status == "COMPLETED":
                 logger.log_event("Orchestrator", "Workflow Completed", {"items_processed": len(final_state.completed_actions)})
+                memory_layer.save_memory(final_state)
             elif final_state.status == "WAITING_FOR_APPROVAL":
                 logger.log_event("Orchestrator", "Workflow Paused", {"status": "WAITING_FOR_APPROVAL"})
             elif final_state.status == "FAILED":
                 logger.log_event("Orchestrator", "Workflow Failed", {"failures": final_state.failures})
+                memory_layer.save_memory(final_state)
         except Exception as e:
             logger.log_event("Orchestrator", "Workflow Failed", {"error": str(e)})
             raise e
