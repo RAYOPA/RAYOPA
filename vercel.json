@@ -1,0 +1,14 @@
+{
+  "$schema": "https://vercel.com/static/schema.json",
+  "version": 3,
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/src/app/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ]
+}
