@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/api/client';
 import { setAuthToken, setUser } from '@/lib/auth';
@@ -10,11 +10,13 @@ import { IntroGate } from '@/components/intro/FlowPilotIntro';
 export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // error matches AuthUIProps (string | undefined)
+  const [error, setError] = useState<string | undefined>(undefined);
 
-  const handleLogin = async (email: string, pass: string) => {
+  /** Perform login with raw credentials */
+  const performLogin = async (email: string, pass: string) => {
     setLoading(true);
-    setError(null);
+    setError(undefined);
     try {
       const formData = new URLSearchParams();
       formData.append('username', email);
@@ -23,13 +25,13 @@ export default function LoginPage() {
       const tokenRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: formData.toString()
+        body: formData.toString(),
       });
 
       if (!tokenRes.ok) {
         throw new Error('Invalid credentials');
       }
-      
+
       const { access_token } = await tokenRes.json();
       setAuthToken(access_token);
 
@@ -44,9 +46,18 @@ export default function LoginPage() {
     }
   };
 
+  /** Wrapper matching AuthUI onSignIn signature */
+  const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const target = e.currentTarget;
+    const email = (target.elements.namedItem('email') as HTMLInputElement)?.value ?? '';
+    const pass = (target.elements.namedItem('password') as HTMLInputElement)?.value ?? '';
+    await performLogin(email, pass);
+  };
+
   return (
     <IntroGate>
-      <AuthUI onSignIn={handleLogin} loading={loading} error={error} />
+      <AuthUI onSignIn={handleSignIn} loading={loading} error={error} />
     </IntroGate>
   );
 }
