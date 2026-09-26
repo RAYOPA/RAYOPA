@@ -10,3 +10,5 @@ pandas
 python-dotenv
 pyjwt
 bcrypt
+
+langgraph
