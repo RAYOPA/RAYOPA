@@ -29,7 +29,7 @@ export function Sidebar() {
   if (typeof window !== 'undefined') {
     setTimeout(() => {
       const userStr = localStorage.getItem('user');
-      if (!userStr && !window.location.pathname.startsWith('/login')) {
+      if (!userStr && !window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/signup')) {
         window.location.href = '/login';
       } else if (userStr) {
         try {
@@ -43,7 +43,7 @@ export function Sidebar() {
     }, 50);
   }
 
-  if (pathname === '/login') {
+  if (pathname === '/login' || pathname === '/signup') {
     return null;
   }
 
