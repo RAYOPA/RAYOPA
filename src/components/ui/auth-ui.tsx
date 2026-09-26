@@ -127,8 +127,19 @@ export function AuthUI({
   const [internalError, setInternalError] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [signUpLoading, setSignUpLoading] = useState<boolean>(false);
+  const [demoLoading, setDemoLoading] = useState<boolean>(false);
 
   const activeError = externalError || internalError;
+
+  const handleDemoLogin = () => {
+    setDemoLoading(true);
+    const demoUser = { id: 'demo_admin', username: 'admin', role: 'admin' };
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user', JSON.stringify(demoUser));
+      localStorage.setItem('auth_token', 'demo_token_admin');
+      setTimeout(() => window.location.href = '/', 400);
+    }
+  };
 
   const switchMode = (newMode: 'signin' | 'signup') => {
     setInternalError('');
@@ -336,6 +347,16 @@ export function AuthUI({
                 <Button type="submit" className="w-full mt-2 text-base font-semibold" disabled={loading}>
                   {loading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Authenticating...</> : "Sign In"}
                 </Button>
+
+                {/* Demo Access — bypass backend */}
+                <button
+                  type="button"
+                  onClick={handleDemoLogin}
+                  disabled={demoLoading}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-[#8b5cf6]/40 text-[#7c3aed] text-sm font-semibold hover:border-[#8b5cf6] hover:bg-[#8b5cf6]/5 transition-all duration-200 disabled:opacity-60"
+                >
+                  {demoLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Entering dashboard...</> : '⚡ Enter as Demo Admin (no backend needed)'}
+                </button>
                 
                 <div className="relative py-2">
                   <div className="absolute inset-0 flex items-center">

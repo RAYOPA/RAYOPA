@@ -1,13 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { CheckCircle, XCircle, ShieldCheck, AlertCircle, Loader2, ArrowRight, RefreshCw } from 'lucide-react';
-import Link from 'next/link';
-import { getApprovals, approveWorkflow, rejectWorkflow, Approval } from '@/lib/api';
+import { useState, useEffect, useCallback } from "react";
+import { CheckCircle, XCircle, ShieldCheck, AlertCircle, Loader2, RefreshCw } from "lucide-react";
+import Link from "next/link";
+import { getApprovals, approveWorkflow, rejectWorkflow, Approval } from "@/lib/api";
+
+const FILTERS = ["PENDING", "APPROVED", "ALL"] as const;
+type FilterType = typeof FILTERS[number];
 
 export default function Approvals() {
   const [approvals, setApprovals] = useState<Approval[]>([]);
-  const [filter, setFilter] = useState<'PENDING' | 'APPROVED' | 'ALL'>('PENDING');
+  const [filter, setFilter] = useState<FilterType>("PENDING");
   const [isLoading, setIsLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -17,18 +20,16 @@ export default function Approvals() {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await getApprovals(filter === 'ALL' ? undefined : filter);
+      const data = await getApprovals(filter === "ALL" ? undefined : filter);
       setApprovals(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load approvals from backend.');
+      setError(err instanceof Error ? err.message : "Failed to load approvals.");
     } finally {
       setIsLoading(false);
     }
   }, [filter]);
 
-  useEffect(() => {
-    loadApprovals();
-  }, [loadApprovals]);
+  useEffect(() => { loadApprovals(); }, [loadApprovals]);
 
   const handleApprove = async (approval: Approval) => {
     setProcessingId(approval.id);
@@ -36,10 +37,10 @@ export default function Approvals() {
     setSuccessMsg(null);
     try {
       await approveWorkflow(approval.workflow_id, approval.id);
-      setSuccessMsg(`Action approved! Resumed LangGraph execution for workflow #${approval.workflow_id.slice(0, 8)}.`);
+      setSuccessMsg(`Action approved! Resumed execution for workflow #${approval.workflow_id.slice(0, 8)}.`);
       await loadApprovals();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to approve action on backend.');
+      setError(err instanceof Error ? err.message : "Failed to approve action.");
     } finally {
       setProcessingId(null);
     }
@@ -50,146 +51,144 @@ export default function Approvals() {
     setError(null);
     setSuccessMsg(null);
     try {
-      await rejectWorkflow(approval.workflow_id, approval.id, 'Rejected by operator');
+      await rejectWorkflow(approval.workflow_id, approval.id, "Rejected by operator");
       setSuccessMsg(`Action rejected for workflow #${approval.workflow_id.slice(0, 8)}.`);
       await loadApprovals();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to reject action on backend.');
+      setError(err instanceof Error ? err.message : "Failed to reject action.");
     } finally {
       setProcessingId(null);
     }
   };
 
-  const pendingCount = approvals.filter(a => a.status === 'PENDING').length;
+  const pendingCount = filter === "PENDING" ? approvals.length : approvals.filter(a => a.status === "PENDING").length;
 
   return (
-    <div className="max-w-6xl mx-auto w-full pb-20">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <div className="space-y-6">
+      {/* ── Page Header ── */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Approvals Gateway</h1>
-          <p className="text-slate-500 mt-1">Review actions requiring Human-in-the-Loop authorization.</p>
+          <h2 className="fp-h2">Approvals Gateway</h2>
+          <p className="fp-small mt-0.5">Review actions requiring human-in-the-loop authorization.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-semibold">
-            <button
-              onClick={() => setFilter('PENDING')}
-              className={`px-3 py-1.5 rounded-lg transition-colors ${filter === 'PENDING' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-800'}`}
-            >
-              Pending ({pendingCount})
-            </button>
-            <button
-              onClick={() => setFilter('APPROVED')}
-              className={`px-3 py-1.5 rounded-lg transition-colors ${filter === 'APPROVED' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-800'}`}
-            >
-              Approved
-            </button>
-            <button
-              onClick={() => setFilter('ALL')}
-              className={`px-3 py-1.5 rounded-lg transition-colors ${filter === 'ALL' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-800'}`}
-            >
-              All
-            </button>
+        <div className="flex items-center gap-2">
+          {/* Status filter */}
+          <div className="flex items-center gap-1 p-1 rounded-lg" style={{ background: "var(--fp-surface-3)" }}>
+            {FILTERS.map(f => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className="px-3 py-1.5 rounded-md text-[12px] font-semibold transition-colors"
+                style={
+                  filter === f
+                    ? { background: "var(--fp-surface)", color: "var(--fp-text)", boxShadow: "var(--fp-shadow-sm)" }
+                    : { color: "var(--fp-text-muted)" }
+                }
+              >
+                {f === "PENDING" ? `Pending (${pendingCount})` : f === "APPROVED" ? "Approved" : "All"}
+              </button>
+            ))}
           </div>
-          <button 
-            onClick={loadApprovals} 
-            title="Refresh approvals"
-            className="p-2 border border-slate-200 bg-white hover:bg-slate-50 rounded-xl text-slate-600"
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+
+          <button onClick={loadApprovals} className="fp-btn fp-btn-secondary" title="Refresh">
+            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
           </button>
         </div>
       </div>
 
+      {/* ── Alerts ── */}
       {successMsg && (
-        <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-xl mb-6 flex items-center gap-2 text-sm">
-          <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+        <div className="flex items-center gap-2 px-4 py-3 rounded-lg border text-sm"
+          style={{ background: "var(--fp-success-bg)", borderColor: "var(--fp-success-border)", color: "var(--fp-success)" }}>
+          <CheckCircle className="w-4 h-4 flex-shrink-0" />
           <span>{successMsg}</span>
         </div>
       )}
-
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl mb-6 flex items-center gap-2 text-sm">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+        <div className="flex items-center gap-2 px-4 py-3 rounded-lg border text-sm"
+          style={{ background: "var(--fp-error-bg)", borderColor: "var(--fp-error-border)", color: "var(--fp-error)" }}>
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-          <div className="font-semibold text-sm text-slate-700">
-            {filter === 'PENDING' ? `Pending Human Approvals (${approvals.length})` : `Approval Records (${approvals.length})`}
+      {/* ── List ── */}
+      <div className="fp-card overflow-hidden">
+        <div className="fp-card-header bg-[var(--fp-surface-2)]">
+          <div className="fp-h3">
+            {filter === "PENDING" ? `Pending Approvals (${approvals.length})` : `Approval Records (${approvals.length})`}
           </div>
-          <span className="text-xs text-slate-400 font-mono">Real-time DB synced</span>
+          <span className="fp-small font-mono">Real-time DB synced</span>
         </div>
-        
+
         {isLoading && approvals.length === 0 ? (
-          <div className="p-12 text-center text-slate-400">
-            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-blue-600" />
-            <span className="text-sm">Loading approval gateway state...</span>
+          <div className="fp-empty">
+            <Loader2 className="w-8 h-8 animate-spin" style={{ color: "var(--fp-indigo)" }} />
+            <p className="fp-small">Loading approval gateway state...</p>
           </div>
         ) : approvals.length === 0 ? (
-          <div className="p-12 text-center text-slate-400">
-            <ShieldCheck className="w-10 h-10 mx-auto mb-2 text-slate-300" />
-            <div className="text-base font-semibold text-slate-700">No pending approvals</div>
-            <p className="text-xs text-slate-500 mt-1">All workflows are currently running autonomously or completed.</p>
+          <div className="fp-empty">
+            <ShieldCheck className="w-10 h-10" style={{ color: "var(--fp-text-faint)" }} />
+            <p className="fp-h3" style={{ color: "var(--fp-text-muted)" }}>No pending approvals</p>
+            <p className="fp-small">All workflows are currently running autonomously or completed.</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-[var(--fp-border-light)]">
             {approvals.map(approval => {
               const isProcessing = processingId === approval.id;
-              const isPending = approval.status === 'PENDING';
+              const isPending = approval.status === "PENDING";
               return (
-                <div key={approval.id} className="p-6">
-                  <div className="flex flex-col sm:flex-row justify-between items-start gap-2 mb-4">
+                <div key={approval.id} className="p-5 sm:p-6 hover:bg-[var(--fp-surface-2)] transition-colors">
+                  <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-5">
                     <div>
-                      <div className="flex items-center gap-3 mb-1">
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                          isPending ? 'bg-amber-100 text-amber-800' :
-                          approval.status === 'APPROVED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className={`fp-badge ${
+                          isPending ? "fp-badge-waiting" :
+                          approval.status === "APPROVED" ? "fp-badge-completed" : "fp-badge-failed"
                         }`}>
                           {approval.status}
                         </span>
-                        <span className="text-sm text-slate-500">
-                          Workflow: <Link href={`/workflows/${approval.workflow_id}`} className="text-blue-600 font-mono hover:underline">
+                        <span className="fp-small">
+                          Workflow: <Link href={`/workflows/${approval.workflow_id}`} className="font-mono hover:underline" style={{ color: "var(--fp-indigo)" }}>
                             #{approval.workflow_id.slice(0, 8)}
                           </Link>
                         </span>
                       </div>
-                      <h3 className="text-lg font-bold text-slate-900">
-                        Authorize Action: <code className="text-blue-600 font-mono">{approval.action}</code>
+                      <h3 className="text-lg font-bold" style={{ color: "var(--fp-text)" }}>
+                        Authorize Action: <code className="font-mono text-sm px-1.5 py-0.5 rounded ml-1" style={{ background: "var(--fp-indigo-light)", color: "var(--fp-indigo-hover)" }}>{approval.action}</code>
                       </h3>
                       {approval.workflow_objective && (
-                        <p className="text-xs text-slate-500 mt-0.5 italic">
-                          "{approval.workflow_objective}"
+                        <p className="text-sm mt-1" style={{ color: "var(--fp-text-2)" }}>
+                          “{approval.workflow_objective}”
                         </p>
                       )}
                     </div>
-                    <div className="text-xs text-slate-400 font-mono">
-                      {approval.requested_at ? new Date(approval.requested_at).toLocaleTimeString() : '—'}
+                    <div className="fp-small font-mono shrink-0">
+                      {approval.requested_at ? new Date(approval.requested_at).toLocaleString() : "—"}
                     </div>
                   </div>
-                  
-                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6">
-                    <h4 className="font-semibold text-xs text-slate-500 uppercase tracking-wider mb-2">Policy Gate & Reason:</h4>
-                    <p className="text-sm text-slate-700">
-                      {approval.reason || 'This action requires explicit human confirmation before dispatching live financial communication or updating account records.'}
+
+                  <div className="p-4 rounded-xl border mb-6" style={{ background: "var(--fp-surface-2)", borderColor: "var(--fp-border)" }}>
+                    <h4 className="fp-label mb-2 text-[10px]">Policy Gate & Reason:</h4>
+                    <p className="text-[13px]" style={{ color: "var(--fp-text-2)" }}>
+                      {approval.reason || "This action requires explicit human confirmation before dispatching live financial communication or updating account records."}
                     </p>
                   </div>
 
                   {isPending && (
                     <div className="flex justify-end gap-3">
-                      <button 
+                      <button
                         onClick={() => handleReject(approval)}
                         disabled={isProcessing}
-                        className="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl font-medium transition-colors flex items-center gap-2 text-sm disabled:opacity-50"
+                        className="fp-btn fp-btn-secondary"
                       >
-                        <XCircle className="w-4 h-4 text-red-500" />
+                        <XCircle className="w-4 h-4" style={{ color: "var(--fp-error)" }} />
                         Reject Action
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleApprove(approval)}
                         disabled={isProcessing}
-                        className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all flex items-center gap-2 shadow-sm text-sm disabled:opacity-50"
+                        className="fp-btn fp-btn-primary"
                       >
                         {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                         Approve & Execute
@@ -198,10 +197,10 @@ export default function Approvals() {
                   )}
 
                   {!isPending && (
-                    <div className="text-xs text-slate-500 flex items-center gap-2">
-                      <span>Resolved by: <strong>{approval.approved_by || 'SYSTEM'}</strong></span>
+                    <div className="flex items-center gap-2 fp-small">
+                      <span>Resolved by: <strong style={{ color: "var(--fp-text)" }}>{approval.approved_by || "SYSTEM"}</strong></span>
                       {approval.approved_at && (
-                        <span>• Time: {new Date(approval.approved_at).toLocaleTimeString()}</span>
+                        <span>• Time: {new Date(approval.approved_at).toLocaleString()}</span>
                       )}
                     </div>
                   )}

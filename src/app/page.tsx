@@ -1,23 +1,127 @@
 "use client";
 
-import { Activity, CheckCircle, AlertCircle, Clock, Workflow as WorkflowIcon, RotateCcw, ArrowRight, Server, Zap, Database, PlayCircle, PlusCircle, RefreshCw } from 'lucide-react';
-import Link from 'next/link';
-import { useState, useEffect, useCallback } from 'react';
-import { getMetrics, getWorkflows, getBenchmark, DashboardMetrics, WorkflowListItem } from '@/lib/api';
+import {
+  Workflow, CheckCircle, Clock, AlertCircle,
+  TrendingUp, TrendingDown, RotateCcw, Zap,
+  RefreshCw, PlusCircle, ArrowRight, Activity,
+  ShieldCheck, BarChart2, Users, Database
+} from "lucide-react";
+import Link from "next/link";
+import { useState, useEffect, useCallback } from "react";
+import { getMetrics, getWorkflows, getBenchmark, DashboardMetrics, WorkflowListItem } from "@/lib/api";
 
+/* ─────────────────────────────────────────────────
+   SKELETON
+───────────────────────────────────────────────── */
+function KpiSkeleton() {
+  return (
+    <div className="fp-kpi-card">
+      <div className="fp-skeleton h-3 w-20 mb-4 rounded" />
+      <div className="fp-skeleton h-9 w-16 mb-2 rounded" />
+      <div className="fp-skeleton h-2.5 w-28 rounded" />
+    </div>
+  );
+}
+
+function RowSkeleton() {
+  return (
+    <tr>
+      <td className="py-3 px-4"><div className="fp-skeleton h-3 w-48 rounded" /></td>
+      <td className="py-3 px-4"><div className="fp-skeleton h-3 w-16 rounded" /></td>
+      <td className="py-3 px-4"><div className="fp-skeleton h-3 w-20 rounded" /></td>
+      <td className="py-3 px-4"><div className="fp-skeleton h-3 w-24 rounded" /></td>
+    </tr>
+  );
+}
+
+/* ─────────────────────────────────────────────────
+   STATUS BADGE
+───────────────────────────────────────────────── */
+function StatusBadge({ status }: { status: string }) {
+  const map: Record<string, string> = {
+    COMPLETED: "fp-badge fp-badge-completed",
+    RUNNING: "fp-badge fp-badge-running",
+    FAILED: "fp-badge fp-badge-failed",
+    WAITING_FOR_APPROVAL: "fp-badge fp-badge-waiting",
+    RECOVERED: "fp-badge fp-badge-recovered",
+  };
+  const cls = map[status] ?? "fp-badge fp-badge-pending";
+  const label = status === "WAITING_FOR_APPROVAL" ? "WAITING" : status;
+  return <span className={cls}>{label}</span>;
+}
+
+/* ─────────────────────────────────────────────────
+   KPI CARD
+───────────────────────────────────────────────── */
+interface KpiProps {
+  label: string;
+  value: number | string;
+  icon: React.ElementType;
+  color?: string;
+  trend?: "up" | "down" | "neutral";
+  sub?: string;
+  loading?: boolean;
+}
+
+function KpiCard({ label, value, icon: Icon, color = "var(--fp-indigo)", trend, sub, loading }: KpiProps) {
+  if (loading) return <KpiSkeleton />;
+  return (
+    <div className="fp-kpi-card">
+      <div className="flex items-start justify-between mb-3">
+        <span className="fp-label">{label}</span>
+        <div
+          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+          style={{ background: `${color}18` }}
+        >
+          <Icon className="w-4 h-4" style={{ color }} />
+        </div>
+      </div>
+      <div className="fp-metric" style={{ color: "var(--fp-text)" }}>
+        {value}
+      </div>
+      {(sub || trend) && (
+        <div className="mt-2 flex items-center gap-1.5">
+          {trend === "up" && <TrendingUp className="w-3 h-3 text-[var(--fp-success)]" />}
+          {trend === "down" && <TrendingDown className="w-3 h-3 text-[var(--fp-error)]" />}
+          {sub && <span className="fp-small">{sub}</span>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────
+   BACKEND BANNER
+───────────────────────────────────────────────── */
+function BackendBanner({ error, onRetry }: { error: string; onRetry: () => void }) {
+  return (
+    <div
+      className="flex items-center justify-between px-4 py-3 rounded-lg border text-sm mb-6"
+      style={{
+        background: "var(--fp-error-bg)",
+        borderColor: "var(--fp-error-border)",
+        color: "var(--fp-error)",
+      }}
+    >
+      <div className="flex items-center gap-2">
+        <AlertCircle className="w-4 h-4 flex-shrink-0" />
+        <span><strong>Backend offline</strong> — {error}</span>
+      </div>
+      <button onClick={onRetry} className="fp-btn fp-btn-secondary text-xs px-3 py-1.5">
+        Retry
+      </button>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────
+   MAIN DASHBOARD
+───────────────────────────────────────────────── */
 const defaultMetrics: DashboardMetrics = {
-  invoices_analyzed: 0,
-  actionable_cases: 0,
-  monitoring_cases: 0,
-  approval_requests: 0,
-  approved: 0,
-  rejected: 0,
-  business_actions: 0,
-  successful_actions: 0,
-  failed_attempts: 0,
-  recovered_failures: 0,
-  replans: 0,
-  unresolved: 0
+  invoices_analyzed: 0, actionable_cases: 0, monitoring_cases: 0,
+  approval_requests: 0, approved: 0, rejected: 0,
+  business_actions: 0, successful_actions: 0, failed_attempts: 0,
+  recovered_failures: 0, replans: 0, unresolved: 0
 };
 
 export default function Dashboard() {
@@ -26,6 +130,7 @@ export default function Dashboard() {
   const [benchmark, setBenchmark] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [backendError, setBackendError] = useState<string | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
@@ -39,8 +144,9 @@ export default function Dashboard() {
       setMetrics(m);
       setWorkflows(wfList);
       setBenchmark(bench);
+      setLastRefresh(new Date());
     } catch (err) {
-      setBackendError(err instanceof Error ? err.message : 'Unable to connect to FlowPilot backend server.');
+      setBackendError(err instanceof Error ? err.message : "Unable to connect to FlowPilot backend.");
     } finally {
       setIsLoading(false);
     }
@@ -48,275 +154,321 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadData();
-    // Poll metrics periodically while viewing dashboard
-    const interval = setInterval(loadData, 5000);
+    const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
   }, [loadData]);
 
+  const successRate =
+    metrics.business_actions > 0
+      ? Math.round((metrics.successful_actions / metrics.business_actions) * 100)
+      : 0;
+
+  const kpis: KpiProps[] = [
+    {
+      label: "Active Workflows",
+      value: workflows.filter(w => w.status === "RUNNING").length,
+      icon: Workflow,
+      color: "var(--fp-indigo)",
+      sub: "Currently executing",
+    },
+    {
+      label: "Completed",
+      value: workflows.filter(w => w.status === "COMPLETED").length,
+      icon: CheckCircle,
+      color: "var(--fp-success)",
+      trend: "up",
+      sub: "All time",
+    },
+    {
+      label: "Pending Approvals",
+      value: metrics.approval_requests,
+      icon: ShieldCheck,
+      color: "var(--fp-warning)",
+      sub: "Awaiting review",
+    },
+    {
+      label: "Success Rate",
+      value: `${successRate}%`,
+      icon: TrendingUp,
+      color: successRate >= 80 ? "var(--fp-success)" : "var(--fp-warning)",
+      sub: `${metrics.successful_actions} of ${metrics.business_actions} actions`,
+    },
+    {
+      label: "Recovered Failures",
+      value: metrics.recovered_failures,
+      icon: RotateCcw,
+      color: "var(--fp-violet)",
+      sub: "Auto-healed by AI",
+    },
+    {
+      label: "Re-plans Triggered",
+      value: metrics.replans,
+      icon: Zap,
+      color: "var(--fp-teal)",
+      sub: "Dynamic adaptation",
+    },
+    {
+      label: "Invoices Analyzed",
+      value: metrics.invoices_analyzed,
+      icon: Database,
+      color: "var(--fp-indigo)",
+      sub: "Business data",
+    },
+    {
+      label: "Unresolved",
+      value: metrics.unresolved,
+      icon: AlertCircle,
+      color: metrics.unresolved > 0 ? "var(--fp-error)" : "var(--fp-success)",
+      sub: "Needs attention",
+    },
+  ];
+
   return (
-    <div className="flex flex-col gap-12 w-full max-w-6xl mx-auto pb-24">
-      
-      {/* LANDING / DASHBOARD HERO */}
-      <section className="bg-[#12372A] text-white rounded-3xl p-12 relative overflow-hidden mt-6 shadow-xl border border-[#436850]">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#436850]/30 to-[#12372A]/50 pointer-events-none"></div>
-        <div className="relative z-10 max-w-2xl">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#436850]/40 text-[#FBFADA] border border-[#ADBC9F]/30 flex items-center gap-1.5">
-              <span className={`w-2 h-2 rounded-full ${backendError ? 'bg-red-500' : 'bg-[#ADBC9F] animate-pulse'}`} />
-              {backendError ? 'BACKEND OFFLINE' : 'LIVE API CONNECTED'}
-            </span>
-          </div>
-
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-[#FBFADA]">FLOWPILOT AI</h1>
-          <p className="text-xl md:text-2xl font-light text-[#ADBC9F] mb-6">From business intent<br/>to completed action.</p>
-          <p className="text-[#FBFADA]/80 mb-8 max-w-xl leading-relaxed">
-            Turn natural-language business objectives into intelligent, adaptive workflows. Powered by Qwen3 8B with local Ollama acceleration, LangGraph state management, and human-in-the-loop authorization.
+    <div className="space-y-6">
+      {/* ── Header row ── */}
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <h2 className="fp-h2">Overview</h2>
+          <p className="fp-small mt-0.5">
+            {lastRefresh ? `Last updated ${lastRefresh.toLocaleTimeString()}` : "Loading data…"}
           </p>
-          
-          <div className="flex flex-wrap gap-4 items-center mb-10">
-            <Link href="/workflows/new" className="bg-[#436850] hover:bg-[#ADBC9F] hover:text-[#12372A] text-[#FBFADA] px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-[#0c251c]/50 flex items-center gap-2 border border-[#436850]">
-              <PlusCircle className="w-5 h-5" /> Create New Workflow
-            </Link>
-            <Link href="/workflows" className="bg-[#0c251c] hover:bg-[#436850] border border-[#436850] text-[#FBFADA] px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2">
-              <WorkflowIcon className="w-5 h-5" /> View Workflows
-            </Link>
-            <Link href="/audit" className="bg-[#0c251c] hover:bg-[#436850] border border-[#436850] text-[#FBFADA] px-5 py-3 rounded-xl font-medium transition-colors">
-              Audit Trail
-            </Link>
-            <Link href="/analyze" className="bg-[#0c251c] hover:bg-[#436850] border border-[#436850] text-[#FBFADA] px-5 py-3 rounded-xl font-medium transition-colors flex items-center gap-2">
-              <Database className="w-5 h-5" /> Analyze Data
-            </Link>
-            <button onClick={loadData} title="Refresh metrics" className="bg-[#0c251c] hover:bg-[#436850] border border-[#436850] text-[#FBFADA] p-3 rounded-xl font-medium transition-colors flex items-center justify-center">
-              <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
-          
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-bold text-[#ADBC9F] tracking-wider">
-            <span>AI PLANNING</span> •
-            <span>MULTI-SOURCE REASONING</span> •
-            <span>HUMAN APPROVAL</span> •
-            <span>DYNAMIC RE-PLANNING</span> •
-            <span>AUDIT TRAIL</span> •
-            <span>TOOL EXECUTION</span>
-          </div>
         </div>
-      </section>
+        <div className="flex items-center gap-2">
+          {/* Backend status pill */}
+          <span
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold border"
+            style={
+              backendError
+                ? { background: "var(--fp-error-bg)", borderColor: "var(--fp-error-border)", color: "var(--fp-error)" }
+                : { background: "var(--fp-success-bg)", borderColor: "var(--fp-success-border)", color: "var(--fp-success)" }
+            }
+          >
+            <span
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ background: backendError ? "var(--fp-error)" : "var(--fp-success)", ...(backendError ? {} : { animation: "pulse 2s infinite" }) }}
+            />
+            {backendError ? "Backend Offline" : "Live"}
+          </span>
 
-      {/* BACKEND ERROR BANNER */}
-      {backendError && (
-        <div className="bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-xl flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-            <div>
-              <div className="font-bold text-sm">Cannot reach FlowPilot Backend</div>
-              <div className="text-xs text-red-600 mt-0.5">{backendError} — Please ensure FastAPI server is running at {process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}.</div>
-            </div>
-          </div>
-          <button onClick={loadData} className="px-4 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700 transition-colors">
-            Retry Connection
+          <Link href="/workflows/new" className="fp-btn fp-btn-primary">
+            <PlusCircle className="w-4 h-4" />
+            New Workflow
+          </Link>
+
+          <button
+            onClick={loadData}
+            className="fp-btn fp-btn-secondary"
+            title="Refresh"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
           </button>
         </div>
-      )}
+      </div>
 
-      {/* DASHBOARD KPI AREA */}
-      <section>
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-xl font-bold tracking-tight text-[#12372A]">Live Workflow Metrics</h2>
-            <p className="text-xs text-[#436850] mt-0.5">Real-time KPI metrics aggregated from backend database and LangGraph execution runtime</p>
-          </div>
-          <span className="text-xs font-mono text-[#436850]">Auto-refreshing (5s)</span>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {[
-            { label: 'Invoices Analyzed', value: metrics.invoices_analyzed, color: 'text-[#12372A]', sub: 'Target set' },
-            { label: 'Actionable Cases', value: metrics.actionable_cases, color: 'text-[#12372A]', sub: 'Overdue > ₹50K' },
-            { label: 'Monitoring Cases', value: metrics.monitoring_cases, color: 'text-[#436850]', sub: 'Extended grace' },
-            { label: 'Approval Requests', value: metrics.approval_requests, color: 'text-amber-800', sub: 'Human-in-loop' },
-            { label: 'Successful Actions', value: metrics.successful_actions, color: 'text-[#12372A]', sub: 'Executed' },
-            { label: 'Failed Attempts', value: metrics.failed_attempts, color: 'text-red-700', sub: 'Email failures' },
-            { label: 'Recovered Failures', value: metrics.recovered_failures, color: 'text-[#436850]', sub: 'Auto-healed' },
-            { label: 'Re-plans Triggered', value: metrics.replans, color: 'text-[#436850]', sub: 'Dynamic plans' },
-            { label: 'Unresolved Cases', value: metrics.unresolved, color: metrics.unresolved > 0 ? 'text-red-700' : 'text-[#436850]', sub: 'Pending' }
-          ].map(kpi => (
-            <div key={kpi.label} className="bg-white p-5 rounded-xl border border-[#ADBC9F] shadow-sm text-center">
-              <div className="text-xs font-medium text-[#436850] mb-1">{kpi.label}</div>
-              <div className={`text-3xl font-extrabold ${kpi.color}`}>{isLoading && metrics.invoices_analyzed === 0 ? '—' : kpi.value}</div>
-              <div className="text-[10px] text-[#436850]/70 mt-1 uppercase tracking-wider">{kpi.sub}</div>
+      {backendError && <BackendBanner error={backendError} onRetry={loadData} />}
+
+      {/* ── KPI Grid ── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-4 gap-4">
+        {kpis.slice(0, 4).map(k => (
+          <KpiCard key={k.label} {...k} loading={isLoading} />
+        ))}
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {kpis.slice(4).map(k => (
+          <KpiCard key={k.label} {...k} loading={isLoading} />
+        ))}
+      </div>
+
+      {/* ── Lower 2-col ── */}
+      <div className="grid lg:grid-cols-3 gap-6">
+
+        {/* Recent Workflows — 2/3 width */}
+        <div className="lg:col-span-2 fp-card">
+          <div className="fp-card-header">
+            <div className="flex items-center gap-2">
+              <Activity className="w-4 h-4" style={{ color: "var(--fp-indigo)" }} />
+              <span className="fp-h3">Recent Workflows</span>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* RECENT WORKFLOWS TABLE */}
-      {workflows.length > 0 && (
-        <section className="bg-white border border-[#ADBC9F] rounded-2xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-[#12372A]">Recent Live Workflows</h2>
-            <Link href="/workflows" className="text-xs font-bold text-[#12372A] hover:underline">
-              View All ({workflows.length}) →
+            <Link
+              href="/workflows"
+              className="flex items-center gap-1 text-[12px] font-medium"
+              style={{ color: "var(--fp-indigo)" }}
+            >
+              View all <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
-          <div className="divide-y divide-[#FBFADA]">
-            {workflows.slice(0, 4).map(wf => (
-              <div key={wf.id} className="py-3 flex items-center justify-between text-sm">
-                <div>
-                  <Link href={`/workflows/${wf.id}`} className="font-semibold text-[#12372A] hover:underline">
-                    {wf.objective}
-                  </Link>
-                  <div className="text-xs text-[#436850] mt-0.5">ID: {wf.id} • Mode: {wf.mode}</div>
+
+          <div style={{ overflowX: "auto" }}>
+            <table className="fp-table">
+              <thead>
+                <tr>
+                  <th>Workflow</th>
+                  <th>Status</th>
+                  <th>Mode</th>
+                  <th>Created</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {isLoading && workflows.length === 0
+                  ? [1,2,3,4].map(i => <RowSkeleton key={i} />)
+                  : workflows.length === 0
+                  ? (
+                    <tr>
+                      <td colSpan={5}>
+                        <div className="fp-empty">
+                          <Workflow className="w-8 h-8" style={{ color: "var(--fp-text-faint)" }} />
+                          <p className="fp-h3" style={{ color: "var(--fp-text-muted)" }}>No workflows yet</p>
+                          <p className="fp-small">Create your first intelligent workflow to get started.</p>
+                          <Link href="/workflows/new" className="fp-btn fp-btn-primary mt-2">
+                            <PlusCircle className="w-4 h-4" /> Create Workflow
+                          </Link>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                  : workflows.slice(0, 6).map(wf => (
+                    <tr key={wf.id} style={{ cursor: "pointer" }}>
+                      <td>
+                        <Link
+                          href={`/workflows/${wf.id}`}
+                          className="font-medium text-[var(--fp-text)] hover:text-[var(--fp-indigo)] transition-colors block max-w-xs truncate"
+                        >
+                          {wf.objective}
+                        </Link>
+                        <span className="fp-small font-mono">#{wf.id.slice(0, 8)}</span>
+                      </td>
+                      <td><StatusBadge status={wf.status} /></td>
+                      <td>
+                        <span className="fp-small font-medium capitalize">{wf.mode}</span>
+                      </td>
+                      <td>
+                        <span className="fp-small">
+                          {wf.created_at ? new Date(wf.created_at).toLocaleDateString() : "—"}
+                        </span>
+                      </td>
+                      <td>
+                        <Link
+                          href={`/workflows/${wf.id}`}
+                          className="p-1 rounded hover:bg-[var(--fp-indigo-light)] transition-colors inline-flex"
+                          style={{ color: "var(--fp-text-muted)" }}
+                        >
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Workflow Health — 1/3 width */}
+        <div className="fp-card">
+          <div className="fp-card-header">
+            <div className="flex items-center gap-2">
+              <BarChart2 className="w-4 h-4" style={{ color: "var(--fp-indigo)" }} />
+              <span className="fp-h3">Workflow Health</span>
+            </div>
+          </div>
+          <div className="fp-card-body space-y-4">
+            {[
+              {
+                label: "Completed",
+                value: workflows.filter(w => w.status === "COMPLETED").length,
+                total: workflows.length,
+                color: "var(--fp-success)",
+              },
+              {
+                label: "Running",
+                value: workflows.filter(w => w.status === "RUNNING").length,
+                total: workflows.length,
+                color: "var(--fp-indigo)",
+              },
+              {
+                label: "Waiting Approval",
+                value: workflows.filter(w => w.status === "WAITING_FOR_APPROVAL").length,
+                total: workflows.length,
+                color: "var(--fp-warning)",
+              },
+              {
+                label: "Failed",
+                value: workflows.filter(w => w.status === "FAILED").length,
+                total: workflows.length,
+                color: "var(--fp-error)",
+              },
+            ].map(stat => {
+              const pct = workflows.length > 0 ? Math.round((stat.value / workflows.length) * 100) : 0;
+              return (
+                <div key={stat.label}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="fp-small font-medium">{stat.label}</span>
+                    <span className="fp-small font-semibold">{stat.value}</span>
+                  </div>
+                  <div className="h-1.5 rounded-full" style={{ background: "var(--fp-border)" }}>
+                    <div
+                      className="h-1.5 rounded-full transition-all duration-700"
+                      style={{ width: `${pct}%`, background: stat.color }}
+                    />
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                    wf.status === 'COMPLETED' ? 'bg-[#ADBC9F]/40 text-[#12372A] border border-[#ADBC9F]' :
-                    wf.status === 'WAITING_FOR_APPROVAL' ? 'bg-amber-100 text-amber-900 border border-amber-300 animate-pulse' :
-                    wf.status === 'FAILED' ? 'bg-red-100 text-red-800 border border-red-300' :
-                    'bg-[#FBFADA] text-[#12372A] border border-[#ADBC9F]'
-                  }`}>
-                    {wf.status}
-                  </span>
-                  <Link href={`/workflows/${wf.id}`} className="p-1.5 text-[#436850] hover:text-[#12372A]">
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
+              );
+            })}
+
+            {/* AI metrics */}
+            <div
+              className="mt-4 pt-4 space-y-3"
+              style={{ borderTop: "1px solid var(--fp-border-light)" }}
+            >
+              <p className="fp-label">AI Operations</p>
+              {[
+                { label: "Approval Requests", value: metrics.approval_requests, icon: ShieldCheck, color: "var(--fp-warning)" },
+                { label: "Re-plans", value: metrics.replans, icon: Zap, color: "var(--fp-violet)" },
+                { label: "Recovered", value: metrics.recovered_failures, icon: RotateCcw, color: "var(--fp-success)" },
+              ].map(m => (
+                <div key={m.label} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <m.icon className="w-3.5 h-3.5" style={{ color: m.color }} />
+                    <span className="fp-small">{m.label}</span>
+                  </div>
+                  <span className="fp-small font-semibold">{m.value}</span>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </section>
+        </div>
+      </div>
+
+      {/* ── Benchmark Results (only if backend returned data) ── */}
+      {benchmark?.runs_executed > 0 && (
+        <div className="fp-card">
+          <div className="fp-card-header">
+            <div className="flex items-center gap-2">
+              <Activity className="w-4 h-4" style={{ color: "var(--fp-indigo)" }} />
+              <span className="fp-h3">Evaluation Suite</span>
+              <span className="fp-badge fp-badge-running" style={{ fontSize: 10 }}>
+                {benchmark.runs_executed} Runs
+              </span>
+            </div>
+          </div>
+          <div className="fp-card-body">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { label: "Success Rate",      value: `${benchmark.aggregate_success_rate?.toFixed(1)}%`,    color: "var(--fp-success)" },
+                { label: "Final-State Match", value: `${benchmark.final_state_correctness?.toFixed(1)}%`,   color: "var(--fp-indigo)" },
+                { label: "Failure Recovery",  value: `${benchmark.recovery_success_rate?.toFixed(1)}%`,     color: "var(--fp-violet)" },
+                { label: "Policy Safety",     value: `${benchmark.approval_correctness?.toFixed(1)}%`,      color: "var(--fp-teal)" },
+              ].map(s => (
+                <div key={s.label} className="text-center p-4 rounded-lg" style={{ background: "var(--fp-surface-2)" }}>
+                  <div className="fp-label mb-2">{s.label}</div>
+                  <div className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
-
-      {/* CANONICAL WORKFLOW BENCHMARK CARD */}
-      <section className="bg-[#436850]/10 border border-[#ADBC9F] rounded-2xl p-8">
-        <h2 className="text-lg font-bold text-[#12372A] mb-2">Canonical Invoice Resolution Objective</h2>
-        <p className="text-[#12372A]/80 mb-6 max-w-3xl">
-          "Find all overdue invoices above ₹50,000, analyze the customers, prioritize the cases, prepare follow-up emails, and ask me for approval before sending."
-        </p>
-        
-        <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-[#12372A]">
-           <span className="bg-white px-3 py-1 rounded-full border border-[#ADBC9F]">7 invoices</span> <ArrowRight className="w-4 h-4 opacity-50"/>
-           <span className="bg-white px-3 py-1 rounded-full border border-[#ADBC9F]">6 actionable</span> <ArrowRight className="w-4 h-4 opacity-50"/>
-           <span className="bg-white px-3 py-1 rounded-full border border-[#ADBC9F]">1 monitoring</span> <ArrowRight className="w-4 h-4 opacity-50"/>
-           <span className="bg-white px-3 py-1 rounded-full border border-amber-300 text-amber-900">3 approvals</span> <ArrowRight className="w-4 h-4 opacity-50"/>
-           <span className="bg-white px-3 py-1 rounded-full border border-[#ADBC9F]">6 business actions</span> <ArrowRight className="w-4 h-4 opacity-50"/>
-           <span className="bg-white px-3 py-1 rounded-full border border-red-300 text-red-900">1 failed attempt</span> <ArrowRight className="w-4 h-4 opacity-50"/>
-           <span className="bg-white px-3 py-1 rounded-full border border-[#ADBC9F]">1 dynamic replan</span> <ArrowRight className="w-4 h-4 opacity-50"/>
-           <span className="bg-white px-3 py-1 rounded-full border border-emerald-400 text-[#12372A]">1 recovered failure</span>
-        </div>
-      </section>
-
-      {/* EVALUATION DASHBOARD */}
-      {benchmark && benchmark.runs_executed && (
-        <section className="bg-gradient-to-br from-[#12372A] to-[#1c4b3a] border border-[#436850] rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden">
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-8 border-b border-[#ADBC9F]/30 pb-4">
-              <div>
-                <h2 className="text-2xl font-extrabold flex items-center gap-2">
-                  <Activity className="w-6 h-6 text-[#ADBC9F]" />
-                  Evaluation Suite Results
-                </h2>
-                <p className="text-[#FBFADA]/80 text-sm mt-1">FlowPilot Benchmark Engine • Generalized cross-domain performance</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="bg-[#436850] text-[#FBFADA] text-xs px-3 py-1.5 rounded-full font-mono border border-[#ADBC9F]/40">
-                  {benchmark.scenarios_defined} Scenarios
-                </span>
-                <span className="bg-[#436850] text-[#FBFADA] text-xs px-3 py-1.5 rounded-full font-mono border border-[#ADBC9F]/40">
-                  {benchmark.runs_executed} Runs
-                </span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="bg-black/20 p-5 rounded-2xl border border-[#ADBC9F]/30 backdrop-blur-sm text-center">
-                <div className="text-xs text-[#ADBC9F] uppercase tracking-widest font-bold mb-2">Success Rate</div>
-                <div className="text-4xl font-black text-white">{benchmark.aggregate_success_rate.toFixed(1)}%</div>
-              </div>
-              <div className="bg-black/20 p-5 rounded-2xl border border-[#ADBC9F]/30 backdrop-blur-sm text-center">
-                <div className="text-xs text-[#ADBC9F] uppercase tracking-widest font-bold mb-2">Final-State Match</div>
-                <div className="text-4xl font-black text-[#ADBC9F]">{benchmark.final_state_correctness.toFixed(1)}%</div>
-              </div>
-              <div className="bg-black/20 p-5 rounded-2xl border border-[#ADBC9F]/30 backdrop-blur-sm text-center">
-                <div className="text-xs text-[#ADBC9F] uppercase tracking-widest font-bold mb-2">Failure Recovery</div>
-                <div className="text-4xl font-black text-[#FBFADA]">{benchmark.recovery_success_rate.toFixed(1)}%</div>
-              </div>
-              <div className="bg-black/20 p-5 rounded-2xl border border-[#ADBC9F]/30 backdrop-blur-sm text-center">
-                <div className="text-xs text-[#ADBC9F] uppercase tracking-widest font-bold mb-2">Policy Safety</div>
-                <div className="text-4xl font-black text-white">{benchmark.approval_correctness.toFixed(1)}%</div>
-              </div>
-            </div>
-            
-            <div className="mt-6 flex flex-wrap gap-4 text-sm font-medium">
-               <div className="flex items-center gap-2 bg-[#0c251c]/70 px-4 py-2 rounded-xl border border-[#ADBC9F]/30">
-                 <span className="text-[#ADBC9F] text-xs uppercase tracking-wider">Duplicates</span>
-                 <span className="font-mono text-white">{benchmark.duplicate_actions_total}</span>
-               </div>
-               <div className="flex items-center gap-2 bg-[#0c251c]/70 px-4 py-2 rounded-xl border border-[#ADBC9F]/30">
-                 <span className="text-[#ADBC9F] text-xs uppercase tracking-wider">Avg Latency</span>
-                 <span className="font-mono text-white">{benchmark.average_latency_ms.toFixed(0)} ms</span>
-               </div>
-               <div className="flex items-center gap-2 bg-[#0c251c]/70 px-4 py-2 rounded-xl border border-[#ADBC9F]/30">
-                 <span className="text-[#ADBC9F] text-xs uppercase tracking-wider">p95 Latency</span>
-                 <span className="font-mono text-white">{benchmark.p95_latency_ms.toFixed(0)} ms</span>
-               </div>
-               <div className="flex items-center gap-2 bg-[#0c251c]/70 px-4 py-2 rounded-xl border border-[#ADBC9F]/30">
-                 <span className="text-[#ADBC9F] text-xs uppercase tracking-wider">Experience Runs</span>
-                 <span className="font-mono text-white">{benchmark.experience_informed_runs}</span>
-               </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* WHY FLOWPILOT? */}
-      <section>
-        <h2 className="text-2xl font-bold mb-8 text-center">From Static Automation to Adaptive Execution</h2>
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="bg-white border border-slate-200 rounded-xl p-8 shadow-sm text-center">
-            <h3 className="text-sm font-bold tracking-widest text-slate-400 mb-6 uppercase">Traditional Automation</h3>
-            <div className="flex flex-col items-center gap-3 text-sm font-medium text-slate-600">
-               <div className="px-4 py-2 border rounded w-48 bg-slate-50">Fixed rules</div> ↓
-               <div className="px-4 py-2 border rounded w-48 bg-slate-50">Fixed sequence</div> ↓
-               <div className="px-4 py-2 border rounded w-48 bg-slate-50">Execute</div> ↓
-               <div className="px-4 py-2 border border-red-200 bg-red-50 text-red-700 w-48">Failure</div> ↓
-               <div className="px-4 py-2 border border-amber-200 bg-amber-50 text-amber-700 w-48">Manual intervention</div>
-            </div>
-          </div>
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 shadow-sm text-center text-slate-300">
-            <h3 className="text-sm font-bold tracking-widest text-blue-400 mb-6 uppercase">FlowPilot AI</h3>
-            <div className="flex flex-col items-center gap-2 text-sm font-medium">
-               <div className="px-4 py-1.5 border border-slate-700 rounded w-48 bg-slate-800 text-white">Business Objective</div> ↓
-               <div className="px-4 py-1.5 border border-slate-700 rounded w-48 bg-slate-800">Understand</div> ↓
-               <div className="px-4 py-1.5 border border-slate-700 rounded w-48 bg-slate-800">Plan & Gather</div> ↓
-               <div className="px-4 py-1.5 border border-slate-700 rounded w-48 bg-slate-800">Reason</div> ↓
-               <div className="px-4 py-1.5 border border-slate-700 rounded w-48 bg-slate-800">Execute</div> ↓
-               <div className="px-4 py-1.5 border border-purple-800 rounded w-48 bg-purple-900/30 text-purple-300">Observe & Re-plan</div> ↓
-               <div className="px-4 py-1.5 border border-green-800 rounded w-48 bg-green-900/30 text-green-400">Recover & Complete</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CORE CAPABILITIES */}
-      <section>
-        <h2 className="text-2xl font-bold mb-8 text-center">Core Capabilities</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            { id: '01', title: 'Objective Understanding', desc: 'Converts natural-language business goals into structured workflow requirements.' },
-            { id: '02', title: 'Adaptive Planning', desc: 'Creates multi-step execution plans and dynamically rewrites them when conditions change.' },
-            { id: '03', title: 'Multi-Source Intelligence', desc: 'Combines information from invoices, customer records, payment status, and corporate credit policies.' },
-            { id: '04', title: 'Intelligent Decisions', desc: 'Uses business context, customer relationship history, and financial factors to determine actions.' },
-            { id: '05', title: 'Human-in-the-Loop', desc: 'Pauses sensitive and high-value actions for explicit human approval via approval gateways.' },
-            { id: '06', title: 'Failure Recovery', desc: 'Detects failed execution, searches for alternatives, dynamically re-plans, and continues execution.' }
-          ].map(cap => (
-            <div key={cap.id} className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-              <div className="text-2xl font-bold text-blue-100 mb-2">{cap.id}</div>
-              <h3 className="font-bold text-slate-800 mb-2">{cap.title}</h3>
-              <p className="text-sm text-slate-600 leading-relaxed">{cap.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }
