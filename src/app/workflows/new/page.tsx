@@ -36,12 +36,12 @@ export default function CreateWorkflow() {
 
   return (
     <div className="max-w-4xl mx-auto flex flex-col items-center justify-center min-h-[70vh]">
-      <div className="bg-white p-10 rounded-2xl border border-[#ADBC9F] shadow-sm w-full">
-        <div className="flex items-center gap-3 mb-6 justify-center text-[#12372A]">
+      <div className="bg-white p-10 rounded-2xl border border-[#4896FE] shadow-sm w-full">
+        <div className="flex items-center gap-3 mb-6 justify-center text-[#5347CE]">
           <Workflow className="w-10 h-10" />
         </div>
-        <h1 className="text-3xl font-bold text-center tracking-tight mb-2 text-[#12372A]">Create New Workflow</h1>
-        <p className="text-[#436850] text-center mb-8 text-lg">What natural-language objective should the AI agent accomplish?</p>
+        <h1 className="text-3xl font-bold text-center tracking-tight mb-2 text-[#5347CE]">Create New Workflow</h1>
+        <p className="text-[#887CFD] text-center mb-8 text-lg">What natural-language objective should the AI agent accomplish?</p>
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 flex items-center gap-3 text-sm">
@@ -56,7 +56,7 @@ export default function CreateWorkflow() {
           value={objective}
           onChange={(e) => setObjective(e.target.value)}
           placeholder="e.g. Find overdue invoices above ₹50,000, prioritize them, draft follow-up emails and ask for approval before sending."
-          className="w-full h-40 p-4 bg-[#FBFADA]/50 border border-[#ADBC9F] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#12372A] focus:bg-white transition-all resize-none text-base text-[#12372A] placeholder-[#436850]/60"
+          className="w-full h-40 p-4 bg-[#ffffff]/50 border border-[#4896FE] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#5347CE] focus:bg-white transition-all resize-none text-base text-[#5347CE] placeholder-[#887CFD]/60"
           disabled={isSubmitting}
         />
 
@@ -65,16 +65,16 @@ export default function CreateWorkflow() {
             onClick={useExample}
             disabled={isSubmitting}
             type="button"
-            className="px-6 py-3 bg-[#ADBC9F]/20 hover:bg-[#ADBC9F]/40 text-[#12372A] rounded-xl font-medium transition-colors flex items-center justify-center gap-2 border border-[#ADBC9F]"
+            className="px-6 py-3 bg-[#4896FE]/20 hover:bg-[#4896FE]/40 text-[#5347CE] rounded-xl font-medium transition-colors flex items-center justify-center gap-2 border border-[#4896FE]"
           >
-            <Sparkles className="w-5 h-5 text-[#436850]" />
+            <Sparkles className="w-5 h-5 text-[#887CFD]" />
             Use Canonical Example
           </button>
           <button
             onClick={handleCreate}
             disabled={!objective.trim() || isSubmitting}
             type="button"
-            className="px-8 py-3 bg-[#12372A] hover:bg-[#436850] text-[#FBFADA] rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-[#12372A]/20"
+            className="px-8 py-3 bg-[#5347CE] hover:bg-[#887CFD] text-[#ffffff] rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-[#5347CE]/20"
           >
             {isSubmitting ? (
               <>

@@ -109,7 +109,7 @@ interface WorkflowNodeProps {
   isCenter?: boolean;
 }
 
-const WorkflowNode: React.FC<WorkflowNodeProps> = ({ icon, label, x, y, delay, color = "#A855F7", isCenter = false }) => (
+const WorkflowNode: React.FC<WorkflowNodeProps> = ({ icon, label, x, y, delay, color = "#887CFD", isCenter = false }) => (
   <motion.div
     className="absolute flex flex-col items-center gap-1.5 cursor-default"
     style={{ left: x, top: y, transform: "translate(-50%, -50%)" }}
@@ -142,7 +142,7 @@ const WorkflowNode: React.FC<WorkflowNodeProps> = ({ icon, label, x, y, delay, c
 interface ConnectionLineProps {
   x1: string; y1: string; x2: string; y2: string; delay: number; color?: string;
 }
-const ConnectionLine: React.FC<ConnectionLineProps> = ({ x1, y1, x2, y2, delay, color = "#7C3AED" }) => (
+const ConnectionLine: React.FC<ConnectionLineProps> = ({ x1, y1, x2, y2, delay, color = "#5347CE" }) => (
   <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible">
     <motion.line
       x1={x1} y1={y1} x2={x2} y2={y2}
@@ -186,7 +186,7 @@ const SceneBrandReveal: React.FC = () => (
         className="block font-black tracking-[-0.04em] leading-none"
         style={{
           fontSize: "clamp(64px, 12vw, 140px)",
-          background: "linear-gradient(135deg, #A855F7, #4F46E5)",
+          background: "linear-gradient(135deg, #887CFD, #5347CE)",
           WebkitBackgroundClip: "text",
           WebkitTextFillColor: "transparent",
         }}
@@ -206,9 +206,9 @@ const SceneBrandReveal: React.FC = () => (
       <span
         className="text-sm sm:text-base font-semibold tracking-[0.5em] uppercase px-3 py-1 rounded-full border"
         style={{
-          color: "#A855F7",
-          borderColor: "#A855F722",
-          background: "#A855F711",
+          color: "#887CFD",
+          borderColor: "#887CFD22",
+          background: "#887CFD11",
           letterSpacing: "0.45em",
         }}
       >
@@ -231,12 +231,12 @@ const SceneBrandReveal: React.FC = () => (
 ───────────────────────────────────────────────── */
 const SceneBusinessObjective: React.FC = () => {
   const floaters: FloatingCardProps[] = [
-    { icon: <IconEmail />, label: "Email", delay: 0.2, x: 5, y: 20, color: "#4F46E5" },
-    { icon: <IconDatabase />, label: "Database", delay: 0.35, x: 80, y: 12, color: "#7C3AED" },
-    { icon: <IconSpreadsheet />, label: "Spreadsheet", delay: 0.5, x: 72, y: 72, color: "#A855F7" },
-    { icon: <IconDoc />, label: "Document", delay: 0.65, x: 8, y: 68, color: "#4F46E5" },
-    { icon: <IconCustomer />, label: "Customer", delay: 0.8, x: 42, y: 82, color: "#7C3AED" },
-    { icon: <IconAI />, label: "AI Agent", delay: 0.95, x: 88, y: 45, color: "#A855F7" },
+    { icon: <IconEmail />, label: "Email", delay: 0.2, x: 5, y: 20, color: "#5347CE" },
+    { icon: <IconDatabase />, label: "Database", delay: 0.35, x: 80, y: 12, color: "#5347CE" },
+    { icon: <IconSpreadsheet />, label: "Spreadsheet", delay: 0.5, x: 72, y: 72, color: "#887CFD" },
+    { icon: <IconDoc />, label: "Document", delay: 0.65, x: 8, y: 68, color: "#5347CE" },
+    { icon: <IconCustomer />, label: "Customer", delay: 0.8, x: 42, y: 82, color: "#5347CE" },
+    { icon: <IconAI />, label: "AI Agent", delay: 0.95, x: 88, y: 45, color: "#887CFD" },
   ];
   return (
     <div className="relative flex flex-col items-center justify-center w-full h-full text-center select-none px-4">
@@ -260,7 +260,7 @@ const SceneBusinessObjective: React.FC = () => {
             className="font-black tracking-tight leading-none uppercase"
             style={{
               fontSize: "clamp(36px, 6vw, 80px)",
-              background: "linear-gradient(90deg, #4F46E5, #A855F7)",
+              background: "linear-gradient(90deg, #5347CE, #887CFD)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
             }}
@@ -296,7 +296,7 @@ const SceneBusinessObjective: React.FC = () => {
             className="font-black tracking-tight leading-none uppercase"
             style={{
               fontSize: "clamp(36px, 6vw, 80px)",
-              background: "linear-gradient(90deg, #7C3AED, #06B6D4)",
+              background: "linear-gradient(90deg, #5347CE, #16C8C7)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
             }}
@@ -328,15 +328,15 @@ const SceneAIWorkflow: React.FC = () => (
     </div>
 
     {/* Center orchestration node */}
-    <WorkflowNode icon={<IconAI />} label="FlowPilot" x="50%" y="50%" delay={0.1} color="#A855F7" isCenter />
+    <WorkflowNode icon={<IconAI />} label="FlowPilot" x="50%" y="50%" delay={0.1} color="#887CFD" isCenter />
 
     {/* Satellite nodes */}
-    <WorkflowNode icon={<IconEmail />} label="Email" x="50%" y="14%" delay={0.65} color="#4F46E5" />
-    <WorkflowNode icon={<IconDatabase />} label="Database" x="82%" y="32%" delay={0.75} color="#7C3AED" />
-    <WorkflowNode icon={<IconApproval />} label="Approval" x="82%" y="68%" delay={0.85} color="#A855F7" />
-    <WorkflowNode icon={<IconAudit />} label="Audit" x="50%" y="84%" delay={0.95} color="#4F46E5" />
-    <WorkflowNode icon={<IconDoc />} label="Docs" x="18%" y="68%" delay={1.05} color="#7C3AED" />
-    <WorkflowNode icon={<IconSpreadsheet />} label="Sheets" x="18%" y="32%" delay={1.15} color="#4F46E5" />
+    <WorkflowNode icon={<IconEmail />} label="Email" x="50%" y="14%" delay={0.65} color="#5347CE" />
+    <WorkflowNode icon={<IconDatabase />} label="Database" x="82%" y="32%" delay={0.75} color="#5347CE" />
+    <WorkflowNode icon={<IconApproval />} label="Approval" x="82%" y="68%" delay={0.85} color="#887CFD" />
+    <WorkflowNode icon={<IconAudit />} label="Audit" x="50%" y="84%" delay={0.95} color="#5347CE" />
+    <WorkflowNode icon={<IconDoc />} label="Docs" x="18%" y="68%" delay={1.05} color="#5347CE" />
+    <WorkflowNode icon={<IconSpreadsheet />} label="Sheets" x="18%" y="32%" delay={1.15} color="#5347CE" />
 
     {/* Label */}
     <motion.div
@@ -355,10 +355,10 @@ const SceneAIWorkflow: React.FC = () => (
 ───────────────────────────────────────────────── */
 const SceneAdaptiveRecovery: React.FC = () => {
   const steps = [
-    { label: "ACTION", color: "#A855F7", delay: 0 },
+    { label: "ACTION", color: "#887CFD", delay: 0 },
     { label: "FAILURE", color: "#F43F5E", delay: 0.2, accent: true },
-    { label: "REPLAN", color: "#7C3AED", delay: 0.4 },
-    { label: "RECOVER", color: "#06B6D4", delay: 0.6 },
+    { label: "REPLAN", color: "#5347CE", delay: 0.4 },
+    { label: "RECOVER", color: "#16C8C7", delay: 0.6 },
     { label: "VERIFY ✓", color: "#10B981", delay: 0.8 },
   ];
 
@@ -377,7 +377,7 @@ const SceneAdaptiveRecovery: React.FC = () => {
         className="font-black uppercase tracking-tight leading-none"
         style={{
           fontSize: "clamp(28px, 5vw, 68px)",
-          background: "linear-gradient(90deg, #A855F7, #06B6D4)",
+          background: "linear-gradient(90deg, #887CFD, #16C8C7)",
           WebkitBackgroundClip: "text",
           WebkitTextFillColor: "transparent",
         }}
@@ -431,7 +431,7 @@ const SceneOutro: React.FC = () => (
       className="font-black tracking-[-0.03em] leading-none"
       style={{
         fontSize: "clamp(48px, 9vw, 110px)",
-        background: "linear-gradient(135deg, #ffffff, #A855F7, #4F46E5)",
+        background: "linear-gradient(135deg, #ffffff, #887CFD, #5347CE)",
         WebkitBackgroundClip: "text",
         WebkitTextFillColor: "transparent",
       }}

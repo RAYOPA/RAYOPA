@@ -68,29 +68,29 @@ export default function AnalyzePage() {
   return (
     <div className="max-w-4xl mx-auto w-full pb-20 mt-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-[#12372A] flex items-center gap-2">
-          <Bot className="w-8 h-8 text-[#436850]" />
+        <h1 className="text-3xl font-bold tracking-tight text-[#5347CE] flex items-center gap-2">
+          <Bot className="w-8 h-8 text-[#887CFD]" />
           Data Analyst AI
         </h1>
-        <p className="text-[#436850] mt-2">Upload your custom CSV data and ask questions. The AI will analyze it for you.</p>
+        <p className="text-[#887CFD] mt-2">Upload your custom CSV data and ask questions. The AI will analyze it for you.</p>
       </div>
 
       <div className="grid gap-6">
         {/* Upload Section */}
-        <div className="bg-white p-6 rounded-2xl border border-[#ADBC9F] shadow-sm">
-          <h2 className="text-lg font-bold text-[#12372A] mb-4 flex items-center gap-2">
-            <Upload className="w-5 h-5 text-[#436850]" />
+        <div className="bg-white p-6 rounded-2xl border border-[#4896FE] shadow-sm">
+          <h2 className="text-lg font-bold text-[#5347CE] mb-4 flex items-center gap-2">
+            <Upload className="w-5 h-5 text-[#887CFD]" />
             1. Upload Data
           </h2>
           
           <div className="flex items-center justify-center w-full">
-            <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-[#ADBC9F] border-dashed rounded-xl cursor-pointer bg-[#FBFADA]/30 hover:bg-[#ADBC9F]/10 transition-colors">
+            <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-[#4896FE] border-dashed rounded-xl cursor-pointer bg-[#ffffff]/30 hover:bg-[#4896FE]/10 transition-colors">
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <FileText className="w-8 h-8 mb-2 text-[#436850]" />
-                <p className="mb-1 text-sm text-[#436850]">
+                <FileText className="w-8 h-8 mb-2 text-[#887CFD]" />
+                <p className="mb-1 text-sm text-[#887CFD]">
                   <span className="font-bold">Click to upload</span> or drag and drop
                 </p>
-                <p className="text-xs text-[#436850]/70">CSV or Text files</p>
+                <p className="text-xs text-[#887CFD]/70">CSV or Text files</p>
               </div>
               <input id="dropzone-file" type="file" className="hidden" accept=".csv,.txt" onChange={handleFileUpload} />
             </label>
@@ -105,9 +105,9 @@ export default function AnalyzePage() {
         </div>
 
         {/* Query Section */}
-        <div className={`bg-white p-6 rounded-2xl border border-[#ADBC9F] shadow-sm transition-opacity ${fileData ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
-          <h2 className="text-lg font-bold text-[#12372A] mb-4 flex items-center gap-2">
-            <Send className="w-5 h-5 text-[#436850]" />
+        <div className={`bg-white p-6 rounded-2xl border border-[#4896FE] shadow-sm transition-opacity ${fileData ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+          <h2 className="text-lg font-bold text-[#5347CE] mb-4 flex items-center gap-2">
+            <Send className="w-5 h-5 text-[#887CFD]" />
             2. Ask the AI
           </h2>
           
@@ -116,13 +116,13 @@ export default function AnalyzePage() {
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="e.g., What are the key trends in this data? or Summarize the total revenue by region."
-              className="w-full min-h-[100px] p-4 rounded-xl border border-[#ADBC9F] focus:border-[#436850] focus:ring-2 focus:ring-[#436850]/20 resize-y text-sm outline-none"
+              className="w-full min-h-[100px] p-4 rounded-xl border border-[#4896FE] focus:border-[#887CFD] focus:ring-2 focus:ring-[#887CFD]/20 resize-y text-sm outline-none"
             />
             
             <button
               onClick={handleAnalyze}
               disabled={isLoading || !fileData || !prompt.trim()}
-              className="bg-[#12372A] hover:bg-[#436850] text-[#FBFADA] font-bold py-3 px-6 rounded-xl transition-colors self-end flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-[#5347CE] hover:bg-[#887CFD] text-[#ffffff] font-bold py-3 px-6 rounded-xl transition-colors self-end flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>
@@ -148,12 +148,12 @@ export default function AnalyzePage() {
 
         {/* Result Section */}
         {result && (
-          <div className="bg-[#12372A] p-6 rounded-2xl border border-[#436850] shadow-xl text-white">
-            <h2 className="text-lg font-bold text-[#FBFADA] mb-4 flex items-center gap-2">
-              <Bot className="w-5 h-5 text-[#ADBC9F]" />
+          <div className="bg-[#5347CE] p-6 rounded-2xl border border-[#887CFD] shadow-xl text-white">
+            <h2 className="text-lg font-bold text-[#ffffff] mb-4 flex items-center gap-2">
+              <Bot className="w-5 h-5 text-[#4896FE]" />
               AI Analysis Result
             </h2>
-            <div className="prose prose-invert max-w-none text-sm text-[#FBFADA]/90 leading-relaxed whitespace-pre-wrap">
+            <div className="prose prose-invert max-w-none text-sm text-[#ffffff]/90 leading-relaxed whitespace-pre-wrap">
               {result}
             </div>
           </div>
