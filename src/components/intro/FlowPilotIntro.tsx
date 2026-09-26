@@ -87,23 +87,23 @@ const SceneBrandReveal: React.FC = () => (
       </div>
     </motion.div>
 
-    <div className="overflow-hidden">
+    <div className="overflow-hidden p-2">
       <motion.span
         className="block font-black tracking-tighter text-white leading-none drop-shadow-xl"
-        style={{ fontSize: "clamp(48px, 10vw, 120px)" }}
+        style={{ fontSize: "clamp(36px, 8vw, 90px)" }}
         initial={{ y: "100%", opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.9, delay: 0.3, ease: EASE_OUT_EXPO }}
+        transition={{ duration: 1.2, delay: 0.3, ease: EASE_OUT_EXPO }}
       >
         FLOWPILOT
       </motion.span>
     </div>
     
     <motion.p
-      className="mt-6 text-sm sm:text-lg text-white/90 font-medium tracking-[0.2em] uppercase"
+      className="mt-6 text-sm sm:text-base text-white/90 font-medium tracking-[0.2em] uppercase"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 1, delay: 0.7 }}
+      transition={{ duration: 1.5, delay: 0.8 }}
     >
       The Future of Work
     </motion.p>
@@ -116,43 +116,43 @@ const SceneBrandReveal: React.FC = () => (
 const SceneKinetic: React.FC = () => {
   return (
     <div className="relative flex flex-col items-center justify-center w-full h-full text-center select-none px-4 z-10">
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-col items-center gap-4 w-full max-w-5xl">
         <motion.div
-          className="font-black text-white/90 tracking-tighter leading-none uppercase drop-shadow-lg"
-          style={{ fontSize: "clamp(36px, 8vw, 90px)" }}
-          initial={{ x: -100, opacity: 0, skewX: -10 }}
+          className="font-black text-white/90 tracking-tighter leading-none uppercase drop-shadow-lg w-full"
+          style={{ fontSize: "clamp(32px, 7vw, 80px)" }}
+          initial={{ x: -60, opacity: 0, skewX: -10 }}
           animate={{ x: 0, opacity: 1, skewX: 0 }}
-          transition={{ duration: 0.7, ease: EASE_OUT_EXPO }}
+          transition={{ duration: 1.0, ease: EASE_OUT_EXPO }}
         >
           BUSINESS
         </motion.div>
         
         <motion.div
-          className="font-black text-white tracking-tighter leading-none uppercase drop-shadow-lg"
-          style={{ fontSize: "clamp(36px, 8vw, 90px)" }}
-          initial={{ x: 100, opacity: 0, skewX: 10 }}
+          className="font-black text-white tracking-tighter leading-none uppercase drop-shadow-lg w-full"
+          style={{ fontSize: "clamp(32px, 7vw, 80px)" }}
+          initial={{ x: 60, opacity: 0, skewX: 10 }}
           animate={{ x: 0, opacity: 1, skewX: 0 }}
-          transition={{ duration: 0.7, delay: 0.15, ease: EASE_OUT_EXPO }}
+          transition={{ duration: 1.0, delay: 0.2, ease: EASE_OUT_EXPO }}
         >
           INTENT
         </motion.div>
         
         <motion.div
-          className="my-4 flex items-center justify-center w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white"
+          className="my-6 flex items-center justify-center w-14 h-14 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white shadow-xl"
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
         >
           <IconLightning />
         </motion.div>
         
-        <div className="overflow-hidden">
+        <div className="overflow-hidden w-full p-2">
           <motion.div
-            className="font-black text-white tracking-tighter leading-none uppercase drop-shadow-2xl"
-            style={{ fontSize: "clamp(48px, 10vw, 110px)" }}
-            initial={{ y: 100, opacity: 0 }}
+            className="font-black text-white tracking-tighter leading-none uppercase drop-shadow-2xl w-full"
+            style={{ fontSize: "clamp(40px, 9vw, 100px)" }}
+            initial={{ y: 80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.6, ease: EASE_OUT_EXPO }}
+            transition={{ duration: 1.2, delay: 0.9, ease: EASE_OUT_EXPO }}
           >
             ACTION
           </motion.div>
@@ -179,23 +179,23 @@ const SceneGlassWorkflow: React.FC = () => {
         Autonomous Orchestration
       </motion.div>
       
-      <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-6 max-w-4xl">
+      <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-6 max-w-4xl px-2">
         {cards.map((card, i) => (
           <React.Fragment key={card}>
             <motion.div
-              className="flex items-center justify-center px-4 py-3 sm:px-6 sm:py-4 bg-white/10 backdrop-blur-xl border border-white/40 rounded-2xl shadow-xl text-white font-bold tracking-wide"
+              className="flex items-center justify-center px-4 py-3 sm:px-6 sm:py-4 bg-white/10 backdrop-blur-xl border border-white/40 rounded-2xl shadow-xl text-white font-bold tracking-wide flex-shrink-0"
               initial={{ opacity: 0, scale: 0.8, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ delay: i * 0.15, duration: 0.7, ease: EASE_OUT_EXPO }}
+              transition={{ delay: i * 0.25, duration: 0.9, ease: EASE_OUT_EXPO }}
             >
               {card}
             </motion.div>
             {i < cards.length - 1 && (
               <motion.div
-                className="hidden sm:block text-white/60"
+                className="hidden md:block text-white/70"
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: (i * 0.15) + 0.1, duration: 0.4 }}
+                transition={{ delay: (i * 0.25) + 0.15, duration: 0.5 }}
               >
                 <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -227,10 +227,10 @@ const SceneOutro: React.FC = () => (
     
     <motion.div
       className="font-black tracking-tighter leading-none text-white drop-shadow-2xl"
-      style={{ fontSize: "clamp(48px, 9vw, 110px)" }}
+      style={{ fontSize: "clamp(40px, 8vw, 96px)" }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, delay: 0.2, ease: EASE_OUT_EXPO }}
+      transition={{ duration: 1.0, delay: 0.3, ease: EASE_OUT_EXPO }}
     >
       FLOWPILOT
     </motion.div>
@@ -266,8 +266,8 @@ const ReplayButton: React.FC<{ onReplay: () => void }> = ({ onReplay }) =>
 /* ─────────────────────────────────────────────────
    SCENE DURATIONS (ms)
 ───────────────────────────────────────────────── */
-const SCENE_DURATIONS = [1400, 1400, 1600, 1100];
-const OUTRO_DURATION = 900;
+const SCENE_DURATIONS = [2200, 2600, 3000, 1500];
+const OUTRO_DURATION = 1200;
 const TOTAL_SCENES = 4;
 
 /* ─────────────────────────────────────────────────
