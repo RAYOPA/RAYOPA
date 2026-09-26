@@ -35,12 +35,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-[#5347CE] text-white hover:bg-[#887CFD] shadow-md hover:shadow-lg shadow-purple-500/20 active:scale-[0.99]",
+        default: "bg-[#8b5cf6] text-white hover:bg-[#7c3aed] shadow-md hover:shadow-lg shadow-purple-500/20 active:scale-[0.99]",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline: "border border-gray-200 bg-white hover:bg-gray-50 hover:text-gray-900 active:scale-[0.99]",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-[#5347CE] underline-offset-4 hover:underline",
+        link: "text-[#8b5cf6] underline-offset-4 hover:underline",
       },
       size: {
         default: "h-11 px-4 py-2",
@@ -74,7 +74,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
       <input
         type={type}
         className={cn(
-          "flex h-11 w-full rounded-xl border border-gray-200 bg-white px-3.5 py-1 text-sm shadow-sm transition-all placeholder:text-gray-400 focus-visible:outline-none focus-visible:border-[#5347CE] focus-visible:ring-2 focus-visible:ring-[#5347CE]/20 disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-11 w-full rounded-xl border border-gray-200 bg-white px-3.5 py-1 text-sm shadow-sm transition-all placeholder:text-gray-400 focus-visible:outline-none focus-visible:border-[#8b5cf6] focus-visible:ring-2 focus-visible:ring-[#8b5cf6]/20 disabled:cursor-not-allowed disabled:opacity-50",
           className
         )}
         ref={ref}
@@ -226,8 +226,8 @@ export function AuthUI({
           className="hidden md:flex w-1/2 p-12 flex-col justify-between text-white animate-gradient-xy relative transition-all duration-700"
           style={{
             backgroundImage: mode === 'signin' 
-              ? "linear-gradient(-45deg, #5347CE, #887CFD, #4896FE, #16C8C7)"
-              : "linear-gradient(-45deg, #887CFD, #4896FE, #16C8C7, #5347CE)",
+              ? "linear-gradient(-45deg, #f59e0b, #d946ef, #8b5cf6, #3b82f6)"
+              : "linear-gradient(-45deg, #ec4899, #8b5cf6, #3b82f6, #06b6d4)",
             backgroundSize: "400% 400%"
           }}
         >
@@ -279,7 +279,7 @@ export function AuthUI({
                     <button 
                       type="button" 
                       onClick={() => switchMode('signup')}
-                      className="text-[#5347CE] hover:text-[#887CFD] hover:underline font-semibold transition-colors"
+                      className="text-[#8b5cf6] hover:text-[#7c3aed] hover:underline font-semibold transition-colors"
                     >
                       Sign up
                     </button>
@@ -290,7 +290,7 @@ export function AuthUI({
                     <button 
                       type="button" 
                       onClick={() => switchMode('signin')}
-                      className="text-[#5347CE] hover:text-[#887CFD] hover:underline font-semibold transition-colors"
+                      className="text-[#8b5cf6] hover:text-[#7c3aed] hover:underline font-semibold transition-colors"
                     >
                       Sign in
                     </button>
@@ -333,13 +333,13 @@ export function AuthUI({
                     <input 
                       type="checkbox" 
                       id="remember" 
-                      className="h-4 w-4 rounded border-gray-300 text-[#5347CE] focus:ring-[#5347CE] cursor-pointer" 
+                      className="h-4 w-4 rounded border-gray-300 text-[#8b5cf6] focus:ring-[#8b5cf6] cursor-pointer" 
                     />
                     <Label htmlFor="remember" className="text-sm font-normal text-gray-600 cursor-pointer">
                       Remember me
                     </Label>
                   </div>
-                  <button type="button" className="text-sm text-[#5347CE] hover:underline font-medium">
+                  <button type="button" className="text-sm text-[#8b5cf6] hover:underline font-medium">
                     Forgot password?
                   </button>
                 </div>
@@ -353,7 +353,7 @@ export function AuthUI({
                   type="button"
                   onClick={handleDemoLogin}
                   disabled={demoLoading}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-[#5347CE]/40 text-[#887CFD] text-sm font-semibold hover:border-[#5347CE] hover:bg-[#5347CE]/5 transition-all duration-200 disabled:opacity-60"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-[#8b5cf6]/40 text-[#7c3aed] text-sm font-semibold hover:border-[#8b5cf6] hover:bg-[#8b5cf6]/5 transition-all duration-200 disabled:opacity-60"
                 >
                   {demoLoading ? <><Loader2 className="w-4 h-4 animate-spin" /> Entering dashboard...</> : '⚡ Enter as Demo Admin (no backend needed)'}
                 </button>
@@ -413,10 +413,10 @@ export function AuthUI({
                     id="terms" 
                     name="terms" 
                     defaultChecked
-                    className="h-4 w-4 mt-0.5 rounded border-gray-300 text-[#5347CE] focus:ring-[#5347CE] cursor-pointer" 
+                    className="h-4 w-4 mt-0.5 rounded border-gray-300 text-[#8b5cf6] focus:ring-[#8b5cf6] cursor-pointer" 
                   />
                   <Label htmlFor="terms" className="text-xs font-normal text-gray-500 leading-tight cursor-pointer">
-                    I agree to the <span className="text-[#5347CE] hover:underline">Terms of Service</span> and <span className="text-[#5347CE] hover:underline">Privacy Policy</span>
+                    I agree to the <span className="text-[#8b5cf6] hover:underline">Terms of Service</span> and <span className="text-[#8b5cf6] hover:underline">Privacy Policy</span>
                   </Label>
                 </div>
                 

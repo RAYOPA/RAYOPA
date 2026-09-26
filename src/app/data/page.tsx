@@ -37,23 +37,23 @@ export default function DataExplorerPage() {
     <div className="max-w-6xl mx-auto w-full pb-20">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-[#5347CE] flex items-center gap-2">
-            <Database className="w-7 h-7 text-[#887CFD]" />
+          <h1 className="text-3xl font-bold tracking-tight text-[#12372A] flex items-center gap-2">
+            <Database className="w-7 h-7 text-[#436850]" />
             Data Explorer
           </h1>
-          <p className="text-[#887CFD] mt-1">Live customer records and invoice data queried by FlowPilot tools.</p>
+          <p className="text-[#436850] mt-1">Live customer records and invoice data queried by FlowPilot tools.</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex bg-white p-1 rounded-xl text-xs font-semibold border border-[#4896FE]">
+          <div className="flex bg-white p-1 rounded-xl text-xs font-semibold border border-[#ADBC9F]">
             <button
               onClick={() => setActiveTab('invoices')}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${activeTab === 'invoices' ? 'bg-[#5347CE] text-[#ffffff] shadow' : 'text-[#887CFD] hover:text-[#5347CE]'}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${activeTab === 'invoices' ? 'bg-[#12372A] text-[#FBFADA] shadow' : 'text-[#436850] hover:text-[#12372A]'}`}
             >
               <FileText className="w-3.5 h-3.5" /> Invoices ({invoices.length})
             </button>
             <button
               onClick={() => setActiveTab('customers')}
-              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${activeTab === 'customers' ? 'bg-[#5347CE] text-[#ffffff] shadow' : 'text-[#887CFD] hover:text-[#5347CE]'}`}
+              className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${activeTab === 'customers' ? 'bg-[#12372A] text-[#FBFADA] shadow' : 'text-[#436850] hover:text-[#12372A]'}`}
             >
               <Users className="w-3.5 h-3.5" /> Customers ({customers.length})
             </button>
@@ -61,7 +61,7 @@ export default function DataExplorerPage() {
           <button 
             onClick={loadData}
             title="Refresh database records" 
-            className="p-2 border border-[#4896FE] bg-white hover:bg-[#4896FE]/20 rounded-xl text-[#5347CE] transition-colors"
+            className="p-2 border border-[#ADBC9F] bg-white hover:bg-[#ADBC9F]/20 rounded-xl text-[#12372A] transition-colors"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
@@ -76,17 +76,17 @@ export default function DataExplorerPage() {
       )}
 
       {/* TABLE */}
-      <div className="bg-white rounded-2xl border border-[#4896FE] shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#ADBC9F] shadow-sm overflow-hidden">
         {isLoading && invoices.length === 0 && customers.length === 0 ? (
-          <div className="p-16 text-center text-[#887CFD]">
-            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-[#5347CE]" />
+          <div className="p-16 text-center text-[#436850]">
+            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-[#12372A]" />
             <div className="text-sm">Fetching records from backend database...</div>
           </div>
         ) : activeTab === 'invoices' ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-[#4896FE] bg-[#4896FE]/20 text-xs text-[#5347CE] uppercase font-semibold">
+                <tr className="border-b border-[#ADBC9F] bg-[#ADBC9F]/20 text-xs text-[#12372A] uppercase font-semibold">
                   <th className="py-3 px-4">Invoice #</th>
                   <th className="py-3 px-4">Customer ID</th>
                   <th className="py-3 px-4">Amount</th>
@@ -95,22 +95,22 @@ export default function DataExplorerPage() {
                   <th className="py-3 px-4">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#4896FE]/30 font-mono text-xs">
+              <tbody className="divide-y divide-[#ADBC9F]/30 font-mono text-xs">
                 {invoices.map(inv => (
-                  <tr key={inv.id} className="hover:bg-[#4896FE]/10 transition-colors">
-                    <td className="py-3 px-4 font-bold text-[#5347CE]">{inv.invoice_number}</td>
-                    <td className="py-3 px-4 text-[#887CFD]">{inv.customer_id}</td>
-                    <td className="py-3 px-4 font-bold text-[#5347CE] font-sans">
+                  <tr key={inv.id} className="hover:bg-[#ADBC9F]/10 transition-colors">
+                    <td className="py-3 px-4 font-bold text-[#12372A]">{inv.invoice_number}</td>
+                    <td className="py-3 px-4 text-[#436850]">{inv.customer_id}</td>
+                    <td className="py-3 px-4 font-bold text-[#12372A] font-sans">
                       ₹{inv.amount.toLocaleString()}
                     </td>
-                    <td className="py-3 px-4 text-[#887CFD]">
+                    <td className="py-3 px-4 text-[#436850]">
                       {inv.due_date ? new Date(inv.due_date).toLocaleDateString() : '—'}
                     </td>
-                    <td className="py-3 px-4 text-[#887CFD]">{inv.days_overdue} days</td>
+                    <td className="py-3 px-4 text-[#436850]">{inv.days_overdue} days</td>
                     <td className="py-3 px-4">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
                         inv.status === 'OVERDUE' ? 'bg-amber-100 text-amber-900 border border-amber-300' :
-                        inv.status === 'PAYMENT_EXTENDED' ? 'bg-[#4896FE]/30 text-[#5347CE] border border-[#4896FE]' : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
+                        inv.status === 'PAYMENT_EXTENDED' ? 'bg-[#ADBC9F]/30 text-[#12372A] border border-[#ADBC9F]' : 'bg-emerald-100 text-emerald-900 border border-emerald-300'
                       }`}>
                         {inv.status}
                       </span>
@@ -124,7 +124,7 @@ export default function DataExplorerPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-[#4896FE] bg-[#4896FE]/20 text-xs text-[#5347CE] uppercase font-semibold">
+                <tr className="border-b border-[#ADBC9F] bg-[#ADBC9F]/20 text-xs text-[#12372A] uppercase font-semibold">
                   <th className="py-3 px-4">ID</th>
                   <th className="py-3 px-4">Name</th>
                   <th className="py-3 px-4">Primary Email</th>
@@ -133,13 +133,13 @@ export default function DataExplorerPage() {
                   <th className="py-3 px-4">Risk Level</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#4896FE]/30 text-xs">
+              <tbody className="divide-y divide-[#ADBC9F]/30 text-xs">
                 {customers.map(c => (
-                  <tr key={c.id} className="hover:bg-[#4896FE]/10 transition-colors">
-                    <td className="py-3 px-4 font-mono text-[#887CFD]">{c.id}</td>
-                    <td className="py-3 px-4 font-bold text-[#5347CE]">{c.name}</td>
-                    <td className="py-3 px-4 font-mono text-[#887CFD]">{c.email}</td>
-                    <td className="py-3 px-4 font-mono text-[#887CFD]">{c.phone || '—'}</td>
+                  <tr key={c.id} className="hover:bg-[#ADBC9F]/10 transition-colors">
+                    <td className="py-3 px-4 font-mono text-[#436850]">{c.id}</td>
+                    <td className="py-3 px-4 font-bold text-[#12372A]">{c.name}</td>
+                    <td className="py-3 px-4 font-mono text-[#436850]">{c.email}</td>
+                    <td className="py-3 px-4 font-mono text-[#436850]">{c.phone || '—'}</td>
                     <td className="py-3 px-4">
                       <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 uppercase">
                         {c.status}
@@ -147,7 +147,7 @@ export default function DataExplorerPage() {
                     </td>
                     <td className="py-3 px-4">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                        c.risk_level === 'HIGH' ? 'bg-red-100 text-red-900 border border-red-300' : 'bg-[#4896FE]/30 text-[#5347CE]'
+                        c.risk_level === 'HIGH' ? 'bg-red-100 text-red-900 border border-red-300' : 'bg-[#ADBC9F]/30 text-[#12372A]'
                       }`}>
                         {c.risk_level}
                       </span>

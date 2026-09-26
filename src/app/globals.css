@@ -2,22 +2,22 @@
 
 @theme inline {
   --color-destructive-foreground: var(--destructive-foreground);
-  --color-nexus-dark: #5347CE;
-  --color-nexus-medium: #887CFD;
-  --color-nexus-blue: #4896FE;
-  --color-nexus-light: #ffffff;
+  --color-emerald-dark: #12372A;
+  --color-emerald-medium: #436850;
+  --color-emerald-sage: #ADBC9F;
+  --color-cream-light: #FBFADA;
 }
 
 :root {
   --radius: 1rem;
   --accent: oklch(0.89 0 0);
   --destructive-foreground: oklch(0.985 0 0);
-  --nexus-dark: #5347CE;
-  --nexus-medium: #887CFD;
-  --nexus-blue: #4896FE;
-  --nexus-light: #ffffff;
-  --background: #F3F4F6;
-  --foreground: #5347CE;
+  --emerald-dark: #12372A;
+  --emerald-medium: #436850;
+  --emerald-sage: #ADBC9F;
+  --cream-light: #FBFADA;
+  --background: #FBFADA;
+  --foreground: #12372A;
 }
 
 .dark {
@@ -29,7 +29,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 
