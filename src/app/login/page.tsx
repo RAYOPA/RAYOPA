@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { apiFetch } from '@/lib/api/client';
 import { setAuthToken, setUser } from '@/lib/auth';
 import { AuthUI } from '@/components/ui/auth-ui';
+import { IntroGate } from '@/components/intro/FlowPilotIntro';
 
 export default function LoginPage() {
   const [error, setError] = useState('');
@@ -53,5 +54,9 @@ export default function LoginPage() {
     }
   };
 
-  return <AuthUI onSignIn={handleLogin} loading={loading} error={error} />;
+  return (
+    <IntroGate>
+      <AuthUI onSignIn={handleLogin} loading={loading} error={error} />
+    </IntroGate>
+  );
 }

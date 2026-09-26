@@ -214,7 +214,7 @@ export function AuthUI({
         <div 
           className="hidden md:flex w-1/2 p-12 flex-col justify-between text-white animate-gradient-xy relative transition-all duration-700"
           style={{
-            background: mode === 'signin' 
+            backgroundImage: mode === 'signin' 
               ? "linear-gradient(-45deg, #f59e0b, #d946ef, #8b5cf6, #3b82f6)"
               : "linear-gradient(-45deg, #ec4899, #8b5cf6, #3b82f6, #06b6d4)",
             backgroundSize: "400% 400%"
