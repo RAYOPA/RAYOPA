@@ -65,6 +65,7 @@ class Communication(Base):
     recipient = Column(String, nullable=False)
     subject = Column(String)
     message = Column(String, nullable=False)
+    message_id = Column(String, nullable=True, index=True)
     status = Column(String, default="SENT")
     timestamp = Column(DateTime, server_default=func.now())
     

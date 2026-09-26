@@ -3,7 +3,7 @@ import { Eye, EyeOff, BrainCircuit } from 'lucide-react'
 import { sound } from '../../utils/audio'
 
 interface SignInPageProps {
-  onLogin: () => void;
+  onLogin: (email: string, pass: string) => Promise<void>;
   onNavigateToSignup: () => void;
 }
 
@@ -29,14 +29,12 @@ export function LoginPage({ onLogin, onNavigateToSignup }: SignInPageProps) {
     setErrorMsg('')
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     sound.playClick()
     
-    // Strict email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(formData.email)) {
-      setErrorMsg('Invalid email format')
+    if (formData.email.length < 1) {
+      setErrorMsg('Username or email is required')
       return
     }
     
@@ -45,26 +43,31 @@ export function LoginPage({ onLogin, onNavigateToSignup }: SignInPageProps) {
       return
     }
 
-    console.log('Login submitted:', formData)
     setFormStatus('loading')
-    setTimeout(() => {
+    setErrorMsg('')
+    try {
+      await onLogin(formData.email, formData.password)
       setFormStatus('success')
-      onLogin()
-    }, 1000)
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Login failed')
+      setFormStatus('error')
+    }
   }
 
   const handleGoogleLogin = () => {
     if (googleStatus === 'loading' || githubStatus === 'loading') return;
     sound.playClick()
     setGoogleStatus('loading')
-    window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/google`
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    window.location.href = `${apiUrl}/api/auth/google`
   }
 
   const handleGithubLogin = () => {
     if (googleStatus === 'loading' || githubStatus === 'loading') return;
     sound.playClick()
     setGithubStatus('loading')
-    window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/github`
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    window.location.href = `${apiUrl}/api/auth/github`
   }
 
   return (
@@ -125,14 +128,14 @@ export function LoginPage({ onLogin, onNavigateToSignup }: SignInPageProps) {
               {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
+                  Username or Email
                 </label>
                 <input
-                  type="email"
+                  type="text"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="Email Address"
+                  placeholder="Username or Email"
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all placeholder:text-gray-400 text-sm text-gray-900"
                   required
                 />

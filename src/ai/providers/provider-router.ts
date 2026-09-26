@@ -21,7 +21,6 @@ export class ProviderRouter implements AIProvider {
 
   constructor(initialCallCount: number = 1) {
     this.providerFactories = [
-      () => new MockProvider(),
       () => new OpenRouterProvider(),
       () => new GrokProvider(),
       () => new OllamaProvider()

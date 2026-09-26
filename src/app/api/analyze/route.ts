@@ -23,7 +23,7 @@ ${data.substring(0, 50000)}`;
 
     const response = await router.generateStructured(prompt, schema, systemInstruction);
 
-    return NextResponse.json({ result: response.data.analysis });
+    return NextResponse.json({ result: response.structured_output.analysis });
   } catch (error: any) {
     console.error("Analysis Error:", error);
     return NextResponse.json({ error: error.message || 'Failed to analyze data' }, { status: 500 });

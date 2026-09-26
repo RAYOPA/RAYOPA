@@ -55,7 +55,7 @@ def planner_node(state: State) -> State:
     if state.status in ["EXECUTE", "APPROVED"] and not state.failures:
         return state
         
-    retrieved_tools = registry.retriever.retrieve(state.objective, top_k=10)
+    retrieved_tools = registry.retriever.retrieve(state.objective, top_k=20)
     tools_dict = get_tools_dictionary(retrieved_tools)
     
     if state.failures:

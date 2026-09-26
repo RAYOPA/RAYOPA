@@ -333,7 +333,7 @@ export default function WorkflowControlCenter({ params }: { params: Promise<{ id
                 <div key={idx} className="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-200 shadow-sm">
                   <div className="flex items-center gap-3">
                     <div className="bg-green-100 p-1.5 rounded text-green-600">
-                      <CheckCircle2 className="w-4 h-4" />
+                      <CheckCircle className="w-4 h-4" />
                     </div>
                     <div>
                       <div className="text-xs text-slate-500 font-medium">Application Step</div>
@@ -448,26 +448,62 @@ export default function WorkflowControlCenter({ params }: { params: Promise<{ id
               </div>
             ) : (
               <div className="space-y-3 flex-1 overflow-y-auto max-h-[420px] pr-1">
-                {workflow.completed_actions.map((act, idx) => (
-                  <div key={idx} className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm">
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-green-500" />
-                        <span className="font-mono font-bold text-slate-900">{act.tool_name}</span>
+                {workflow.completed_actions.map((act, idx) => {
+                  const isEmail = act.tool_name === "sendEmail";
+                  const res = (act.result as Record<string, any>) || {};
+                  const isRealSmtp = res.provider === "smtp" || res.status === "SMTP_ACCEPTED";
+                  const isSandbox = res.provider === "sandbox" || res.verificationMode === "SIMULATED";
+
+                  return (
+                    <div key={idx} className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-green-500" />
+                          <span className="font-mono font-bold text-slate-900">{act.tool_name}</span>
+                          {isEmail && isRealSmtp && (
+                            <span className="text-[10px] font-bold uppercase px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full border border-blue-200">
+                              Real SMTP Email
+                            </span>
+                          )}
+                          {isEmail && isSandbox && (
+                            <span className="text-[10px] font-bold uppercase px-2 py-0.5 bg-purple-100 text-purple-800 rounded-full border border-purple-200">
+                              Sandbox Email (Simulated)
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] font-bold uppercase px-2 py-0.5 bg-green-100 text-green-800 rounded">
+                          {act.status}
+                        </span>
                       </div>
-                      <span className="text-[10px] font-bold uppercase px-2 py-0.5 bg-green-100 text-green-800 rounded">
-                        {act.status}
-                      </span>
+
+                      {isEmail ? (
+                        <div className="mt-2 bg-white border border-slate-200 rounded-lg p-3 text-xs space-y-1.5 font-mono">
+                          <div className="flex justify-between items-center pb-1.5 border-b border-slate-100">
+                            <span className="text-slate-500 font-semibold uppercase text-[10px]">Email Dispatch Details</span>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${isRealSmtp ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700'}`}>
+                              Provider: {res.provider || (isRealSmtp ? 'smtp' : 'sandbox')}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-[11px]">
+                            <div><span className="text-slate-400">Recipient:</span> <span className="text-slate-800 font-semibold">{res.recipient || (act.arguments?.recipient as string) || '—'}</span></div>
+                            <div><span className="text-slate-400">Status:</span> <span className="text-emerald-700 font-bold">{res.status || 'SUCCESS'}</span></div>
+                            {res.subject && <div className="sm:col-span-2"><span className="text-slate-400">Subject:</span> <span className="text-slate-700">{res.subject}</span></div>}
+                            {res.message_id && <div className="sm:col-span-2"><span className="text-slate-400">Message-ID:</span> <span className="text-slate-600 select-all">{res.message_id}</span></div>}
+                            {res.timestamp && <div className="sm:col-span-2"><span className="text-slate-400">Timestamp:</span> <span className="text-slate-500">{new Date(res.timestamp).toLocaleString()}</span></div>}
+                          </div>
+                        </div>
+                      ) : (
+                        act.result && (
+                          <div className="mt-2">
+                            <pre className="text-[11px] bg-white border border-slate-200 p-2 rounded text-slate-700 overflow-x-auto font-mono">
+                              {JSON.stringify(act.result, null, 2)}
+                            </pre>
+                          </div>
+                        )
+                      )}
                     </div>
-                    {act.result && (
-                      <div className="mt-2">
-                        <pre className="text-[11px] bg-white border border-slate-200 p-2 rounded text-slate-700 overflow-x-auto font-mono">
-                          {JSON.stringify(act.result, null, 2)}
-                        </pre>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
