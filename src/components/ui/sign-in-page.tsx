@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { Eye, EyeOff, BrainCircuit } from 'lucide-react'
-import { sound } from '../../utils/audio'
 
 interface SignInPageProps {
   onLogin: (email: string, pass: string) => Promise<void>;
@@ -31,10 +30,11 @@ export function LoginPage({ onLogin, onNavigateToSignup }: SignInPageProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    sound.playClick()
     
-    if (formData.email.length < 1) {
-      setErrorMsg('Username or email is required')
+    // Strict email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email)) {
+      setErrorMsg('Invalid email format')
       return
     }
     
@@ -44,7 +44,6 @@ export function LoginPage({ onLogin, onNavigateToSignup }: SignInPageProps) {
     }
 
     setFormStatus('loading')
-    setErrorMsg('')
     try {
       await onLogin(formData.email, formData.password)
       setFormStatus('success')
@@ -56,18 +55,14 @@ export function LoginPage({ onLogin, onNavigateToSignup }: SignInPageProps) {
 
   const handleGoogleLogin = () => {
     if (googleStatus === 'loading' || githubStatus === 'loading') return;
-    sound.playClick()
     setGoogleStatus('loading')
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-    window.location.href = `${apiUrl}/api/auth/google`
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/google`
   }
 
   const handleGithubLogin = () => {
     if (googleStatus === 'loading' || githubStatus === 'loading') return;
-    sound.playClick()
     setGithubStatus('loading')
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-    window.location.href = `${apiUrl}/api/auth/github`
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/auth/github`
   }
 
   return (
@@ -107,7 +102,6 @@ export function LoginPage({ onLogin, onNavigateToSignup }: SignInPageProps) {
                 <button
                   type="button"
                   onClick={() => {
-                    sound.playClick()
                     onNavigateToSignup()
                   }}
                   className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
@@ -128,14 +122,14 @@ export function LoginPage({ onLogin, onNavigateToSignup }: SignInPageProps) {
               {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Username or Email
+                  Email Address
                 </label>
                 <input
-                  type="text"
+                  type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="Username or Email"
+                  placeholder="Email Address"
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all placeholder:text-gray-400 text-sm text-gray-900"
                   required
                 />
