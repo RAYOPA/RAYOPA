@@ -57,38 +57,41 @@ export default function Dashboard() {
     <div className="flex flex-col gap-12 w-full max-w-6xl mx-auto pb-24">
       
       {/* LANDING / DASHBOARD HERO */}
-      <section className="bg-slate-950 text-white rounded-3xl p-12 relative overflow-hidden mt-6 shadow-xl border border-slate-800">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-purple-900/20 pointer-events-none"></div>
+      <section className="bg-[#12372A] text-white rounded-3xl p-12 relative overflow-hidden mt-6 shadow-xl border border-[#436850]">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#436850]/30 to-[#12372A]/50 pointer-events-none"></div>
         <div className="relative z-10 max-w-2xl">
           <div className="flex items-center gap-3 mb-4">
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center gap-1.5">
-              <span className={`w-2 h-2 rounded-full ${backendError ? 'bg-red-500' : 'bg-green-500 animate-pulse'}`} />
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#436850]/40 text-[#FBFADA] border border-[#ADBC9F]/30 flex items-center gap-1.5">
+              <span className={`w-2 h-2 rounded-full ${backendError ? 'bg-red-500' : 'bg-[#ADBC9F] animate-pulse'}`} />
               {backendError ? 'BACKEND OFFLINE' : 'LIVE API CONNECTED'}
             </span>
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">FLOWPILOT AI</h1>
-          <p className="text-xl md:text-2xl font-light text-slate-300 mb-6">From business intent<br/>to completed action.</p>
-          <p className="text-slate-400 mb-8 max-w-xl leading-relaxed">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-[#FBFADA]">FLOWPILOT AI</h1>
+          <p className="text-xl md:text-2xl font-light text-[#ADBC9F] mb-6">From business intent<br/>to completed action.</p>
+          <p className="text-[#FBFADA]/80 mb-8 max-w-xl leading-relaxed">
             Turn natural-language business objectives into intelligent, adaptive workflows. Powered by Qwen3 8B with local Ollama acceleration, LangGraph state management, and human-in-the-loop authorization.
           </p>
           
           <div className="flex flex-wrap gap-4 items-center mb-10">
-            <Link href="/workflows/new" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-900/50 flex items-center gap-2">
+            <Link href="/workflows/new" className="bg-[#436850] hover:bg-[#ADBC9F] hover:text-[#12372A] text-[#FBFADA] px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-[#0c251c]/50 flex items-center gap-2 border border-[#436850]">
               <PlusCircle className="w-5 h-5" /> Create New Workflow
             </Link>
-            <Link href="/workflows" className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2">
+            <Link href="/workflows" className="bg-[#0c251c] hover:bg-[#436850] border border-[#436850] text-[#FBFADA] px-6 py-3 rounded-xl font-medium transition-colors flex items-center gap-2">
               <WorkflowIcon className="w-5 h-5" /> View Workflows
             </Link>
-            <Link href="/audit" className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-5 py-3 rounded-xl font-medium transition-colors">
+            <Link href="/audit" className="bg-[#0c251c] hover:bg-[#436850] border border-[#436850] text-[#FBFADA] px-5 py-3 rounded-xl font-medium transition-colors">
               Audit Trail
             </Link>
-            <button onClick={loadData} title="Refresh metrics" className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white p-3 rounded-xl font-medium transition-colors flex items-center justify-center">
+            <Link href="/analyze" className="bg-[#0c251c] hover:bg-[#436850] border border-[#436850] text-[#FBFADA] px-5 py-3 rounded-xl font-medium transition-colors flex items-center gap-2">
+              <Database className="w-5 h-5" /> Analyze Data
+            </Link>
+            <button onClick={loadData} title="Refresh metrics" className="bg-[#0c251c] hover:bg-[#436850] border border-[#436850] text-[#FBFADA] p-3 rounded-xl font-medium transition-colors flex items-center justify-center">
               <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
           </div>
           
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-bold text-slate-500 tracking-wider">
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-bold text-[#ADBC9F] tracking-wider">
             <span>AI PLANNING</span> •
             <span>MULTI-SOURCE REASONING</span> •
             <span>HUMAN APPROVAL</span> •
@@ -119,27 +122,27 @@ export default function Dashboard() {
       <section>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold tracking-tight">Live Workflow Metrics</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Real-time KPI metrics aggregated from backend database and LangGraph execution runtime</p>
+            <h2 className="text-xl font-bold tracking-tight text-[#12372A]">Live Workflow Metrics</h2>
+            <p className="text-xs text-[#436850] mt-0.5">Real-time KPI metrics aggregated from backend database and LangGraph execution runtime</p>
           </div>
-          <span className="text-xs font-mono text-slate-400">Auto-refreshing (5s)</span>
+          <span className="text-xs font-mono text-[#436850]">Auto-refreshing (5s)</span>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {[
-            { label: 'Invoices Analyzed', value: metrics.invoices_analyzed, color: 'text-slate-900', sub: 'Target set' },
-            { label: 'Actionable Cases', value: metrics.actionable_cases, color: 'text-blue-600', sub: 'Overdue > ₹50K' },
-            { label: 'Monitoring Cases', value: metrics.monitoring_cases, color: 'text-slate-600', sub: 'Extended grace' },
-            { label: 'Approval Requests', value: metrics.approval_requests, color: 'text-amber-600', sub: 'Human-in-loop' },
-            { label: 'Successful Actions', value: metrics.successful_actions, color: 'text-green-600', sub: 'Executed' },
-            { label: 'Failed Attempts', value: metrics.failed_attempts, color: 'text-red-600', sub: 'Email failures' },
-            { label: 'Recovered Failures', value: metrics.recovered_failures, color: 'text-purple-600', sub: 'Auto-healed' },
-            { label: 'Re-plans Triggered', value: metrics.replans, color: 'text-purple-600', sub: 'Dynamic plans' },
-            { label: 'Unresolved Cases', value: metrics.unresolved, color: metrics.unresolved > 0 ? 'text-red-600' : 'text-slate-500', sub: 'Pending' }
+            { label: 'Invoices Analyzed', value: metrics.invoices_analyzed, color: 'text-[#12372A]', sub: 'Target set' },
+            { label: 'Actionable Cases', value: metrics.actionable_cases, color: 'text-[#12372A]', sub: 'Overdue > ₹50K' },
+            { label: 'Monitoring Cases', value: metrics.monitoring_cases, color: 'text-[#436850]', sub: 'Extended grace' },
+            { label: 'Approval Requests', value: metrics.approval_requests, color: 'text-amber-800', sub: 'Human-in-loop' },
+            { label: 'Successful Actions', value: metrics.successful_actions, color: 'text-[#12372A]', sub: 'Executed' },
+            { label: 'Failed Attempts', value: metrics.failed_attempts, color: 'text-red-700', sub: 'Email failures' },
+            { label: 'Recovered Failures', value: metrics.recovered_failures, color: 'text-[#436850]', sub: 'Auto-healed' },
+            { label: 'Re-plans Triggered', value: metrics.replans, color: 'text-[#436850]', sub: 'Dynamic plans' },
+            { label: 'Unresolved Cases', value: metrics.unresolved, color: metrics.unresolved > 0 ? 'text-red-700' : 'text-[#436850]', sub: 'Pending' }
           ].map(kpi => (
-            <div key={kpi.label} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm text-center">
-              <div className="text-xs font-medium text-slate-500 mb-1">{kpi.label}</div>
+            <div key={kpi.label} className="bg-white p-5 rounded-xl border border-[#ADBC9F] shadow-sm text-center">
+              <div className="text-xs font-medium text-[#436850] mb-1">{kpi.label}</div>
               <div className={`text-3xl font-extrabold ${kpi.color}`}>{isLoading && metrics.invoices_analyzed === 0 ? '—' : kpi.value}</div>
-              <div className="text-[10px] text-slate-400 mt-1 uppercase tracking-wider">{kpi.sub}</div>
+              <div className="text-[10px] text-[#436850]/70 mt-1 uppercase tracking-wider">{kpi.sub}</div>
             </div>
           ))}
         </div>
@@ -147,32 +150,32 @@ export default function Dashboard() {
 
       {/* RECENT WORKFLOWS TABLE */}
       {workflows.length > 0 && (
-        <section className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <section className="bg-white border border-[#ADBC9F] rounded-2xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-slate-900">Recent Live Workflows</h2>
-            <Link href="/workflows" className="text-xs font-bold text-blue-600 hover:underline">
+            <h2 className="text-lg font-bold text-[#12372A]">Recent Live Workflows</h2>
+            <Link href="/workflows" className="text-xs font-bold text-[#12372A] hover:underline">
               View All ({workflows.length}) →
             </Link>
           </div>
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-[#FBFADA]">
             {workflows.slice(0, 4).map(wf => (
               <div key={wf.id} className="py-3 flex items-center justify-between text-sm">
                 <div>
-                  <Link href={`/workflows/${wf.id}`} className="font-semibold text-blue-600 hover:underline">
+                  <Link href={`/workflows/${wf.id}`} className="font-semibold text-[#12372A] hover:underline">
                     {wf.objective}
                   </Link>
-                  <div className="text-xs text-slate-400 mt-0.5">ID: {wf.id} • Mode: {wf.mode}</div>
+                  <div className="text-xs text-[#436850] mt-0.5">ID: {wf.id} • Mode: {wf.mode}</div>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                    wf.status === 'COMPLETED' ? 'bg-green-100 text-green-700' :
-                    wf.status === 'WAITING_FOR_APPROVAL' ? 'bg-amber-100 text-amber-800 animate-pulse' :
-                    wf.status === 'FAILED' ? 'bg-red-100 text-red-700' :
-                    'bg-blue-100 text-blue-700'
+                    wf.status === 'COMPLETED' ? 'bg-[#ADBC9F]/40 text-[#12372A] border border-[#ADBC9F]' :
+                    wf.status === 'WAITING_FOR_APPROVAL' ? 'bg-amber-100 text-amber-900 border border-amber-300 animate-pulse' :
+                    wf.status === 'FAILED' ? 'bg-red-100 text-red-800 border border-red-300' :
+                    'bg-[#FBFADA] text-[#12372A] border border-[#ADBC9F]'
                   }`}>
                     {wf.status}
                   </span>
-                  <Link href={`/workflows/${wf.id}`} className="p-1.5 text-slate-400 hover:text-slate-700">
+                  <Link href={`/workflows/${wf.id}`} className="p-1.5 text-[#436850] hover:text-[#12372A]">
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>
@@ -183,81 +186,81 @@ export default function Dashboard() {
       )}
 
       {/* CANONICAL WORKFLOW BENCHMARK CARD */}
-      <section className="bg-blue-50 border border-blue-100 rounded-2xl p-8">
-        <h2 className="text-lg font-bold text-blue-900 mb-2">Canonical Invoice Resolution Objective</h2>
-        <p className="text-blue-800/80 mb-6 max-w-3xl">
+      <section className="bg-[#436850]/10 border border-[#ADBC9F] rounded-2xl p-8">
+        <h2 className="text-lg font-bold text-[#12372A] mb-2">Canonical Invoice Resolution Objective</h2>
+        <p className="text-[#12372A]/80 mb-6 max-w-3xl">
           "Find all overdue invoices above ₹50,000, analyze the customers, prioritize the cases, prepare follow-up emails, and ask me for approval before sending."
         </p>
         
-        <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-blue-900">
-           <span className="bg-white px-3 py-1 rounded-full border border-blue-200">7 invoices</span> <ArrowRight className="w-4 h-4 opacity-50"/>
-           <span className="bg-white px-3 py-1 rounded-full border border-blue-200">6 actionable</span> <ArrowRight className="w-4 h-4 opacity-50"/>
-           <span className="bg-white px-3 py-1 rounded-full border border-blue-200">1 monitoring</span> <ArrowRight className="w-4 h-4 opacity-50"/>
-           <span className="bg-white px-3 py-1 rounded-full border border-amber-200 text-amber-800">3 approvals</span> <ArrowRight className="w-4 h-4 opacity-50"/>
-           <span className="bg-white px-3 py-1 rounded-full border border-blue-200">6 business actions</span> <ArrowRight className="w-4 h-4 opacity-50"/>
-           <span className="bg-white px-3 py-1 rounded-full border border-red-200 text-red-800">1 failed attempt</span> <ArrowRight className="w-4 h-4 opacity-50"/>
-           <span className="bg-white px-3 py-1 rounded-full border border-purple-200 text-purple-800">1 dynamic replan</span> <ArrowRight className="w-4 h-4 opacity-50"/>
-           <span className="bg-white px-3 py-1 rounded-full border border-green-200 text-green-800">1 recovered failure</span>
+        <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-[#12372A]">
+           <span className="bg-white px-3 py-1 rounded-full border border-[#ADBC9F]">7 invoices</span> <ArrowRight className="w-4 h-4 opacity-50"/>
+           <span className="bg-white px-3 py-1 rounded-full border border-[#ADBC9F]">6 actionable</span> <ArrowRight className="w-4 h-4 opacity-50"/>
+           <span className="bg-white px-3 py-1 rounded-full border border-[#ADBC9F]">1 monitoring</span> <ArrowRight className="w-4 h-4 opacity-50"/>
+           <span className="bg-white px-3 py-1 rounded-full border border-amber-300 text-amber-900">3 approvals</span> <ArrowRight className="w-4 h-4 opacity-50"/>
+           <span className="bg-white px-3 py-1 rounded-full border border-[#ADBC9F]">6 business actions</span> <ArrowRight className="w-4 h-4 opacity-50"/>
+           <span className="bg-white px-3 py-1 rounded-full border border-red-300 text-red-900">1 failed attempt</span> <ArrowRight className="w-4 h-4 opacity-50"/>
+           <span className="bg-white px-3 py-1 rounded-full border border-[#ADBC9F]">1 dynamic replan</span> <ArrowRight className="w-4 h-4 opacity-50"/>
+           <span className="bg-white px-3 py-1 rounded-full border border-emerald-400 text-[#12372A]">1 recovered failure</span>
         </div>
       </section>
 
       {/* EVALUATION DASHBOARD */}
       {benchmark && benchmark.runs_executed && (
-        <section className="bg-gradient-to-br from-indigo-900 to-slate-900 border border-indigo-700 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden">
+        <section className="bg-gradient-to-br from-[#12372A] to-[#1c4b3a] border border-[#436850] rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden">
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
           <div className="relative z-10">
-            <div className="flex items-center justify-between mb-8 border-b border-indigo-500/30 pb-4">
+            <div className="flex items-center justify-between mb-8 border-b border-[#ADBC9F]/30 pb-4">
               <div>
                 <h2 className="text-2xl font-extrabold flex items-center gap-2">
-                  <Activity className="w-6 h-6 text-indigo-400" />
+                  <Activity className="w-6 h-6 text-[#ADBC9F]" />
                   Evaluation Suite Results
                 </h2>
-                <p className="text-indigo-200/70 text-sm mt-1">FlowPilot Benchmark Engine • Generalized cross-domain performance</p>
+                <p className="text-[#FBFADA]/80 text-sm mt-1">FlowPilot Benchmark Engine • Generalized cross-domain performance</p>
               </div>
               <div className="flex items-center gap-3">
-                <span className="bg-indigo-800/60 text-indigo-200 text-xs px-3 py-1.5 rounded-full font-mono border border-indigo-600/50">
+                <span className="bg-[#436850] text-[#FBFADA] text-xs px-3 py-1.5 rounded-full font-mono border border-[#ADBC9F]/40">
                   {benchmark.scenarios_defined} Scenarios
                 </span>
-                <span className="bg-indigo-800/60 text-indigo-200 text-xs px-3 py-1.5 rounded-full font-mono border border-indigo-600/50">
+                <span className="bg-[#436850] text-[#FBFADA] text-xs px-3 py-1.5 rounded-full font-mono border border-[#ADBC9F]/40">
                   {benchmark.runs_executed} Runs
                 </span>
               </div>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="bg-black/20 p-5 rounded-2xl border border-indigo-500/20 backdrop-blur-sm text-center">
-                <div className="text-xs text-indigo-300 uppercase tracking-widest font-bold mb-2">Success Rate</div>
+              <div className="bg-black/20 p-5 rounded-2xl border border-[#ADBC9F]/30 backdrop-blur-sm text-center">
+                <div className="text-xs text-[#ADBC9F] uppercase tracking-widest font-bold mb-2">Success Rate</div>
                 <div className="text-4xl font-black text-white">{benchmark.aggregate_success_rate.toFixed(1)}%</div>
               </div>
-              <div className="bg-black/20 p-5 rounded-2xl border border-indigo-500/20 backdrop-blur-sm text-center">
-                <div className="text-xs text-indigo-300 uppercase tracking-widest font-bold mb-2">Final-State Match</div>
-                <div className="text-4xl font-black text-green-400">{benchmark.final_state_correctness.toFixed(1)}%</div>
+              <div className="bg-black/20 p-5 rounded-2xl border border-[#ADBC9F]/30 backdrop-blur-sm text-center">
+                <div className="text-xs text-[#ADBC9F] uppercase tracking-widest font-bold mb-2">Final-State Match</div>
+                <div className="text-4xl font-black text-[#ADBC9F]">{benchmark.final_state_correctness.toFixed(1)}%</div>
               </div>
-              <div className="bg-black/20 p-5 rounded-2xl border border-indigo-500/20 backdrop-blur-sm text-center">
-                <div className="text-xs text-indigo-300 uppercase tracking-widest font-bold mb-2">Failure Recovery</div>
-                <div className="text-4xl font-black text-amber-400">{benchmark.recovery_success_rate.toFixed(1)}%</div>
+              <div className="bg-black/20 p-5 rounded-2xl border border-[#ADBC9F]/30 backdrop-blur-sm text-center">
+                <div className="text-xs text-[#ADBC9F] uppercase tracking-widest font-bold mb-2">Failure Recovery</div>
+                <div className="text-4xl font-black text-[#FBFADA]">{benchmark.recovery_success_rate.toFixed(1)}%</div>
               </div>
-              <div className="bg-black/20 p-5 rounded-2xl border border-indigo-500/20 backdrop-blur-sm text-center">
-                <div className="text-xs text-indigo-300 uppercase tracking-widest font-bold mb-2">Policy Safety</div>
+              <div className="bg-black/20 p-5 rounded-2xl border border-[#ADBC9F]/30 backdrop-blur-sm text-center">
+                <div className="text-xs text-[#ADBC9F] uppercase tracking-widest font-bold mb-2">Policy Safety</div>
                 <div className="text-4xl font-black text-white">{benchmark.approval_correctness.toFixed(1)}%</div>
               </div>
             </div>
             
             <div className="mt-6 flex flex-wrap gap-4 text-sm font-medium">
-               <div className="flex items-center gap-2 bg-indigo-950/50 px-4 py-2 rounded-xl border border-indigo-500/30">
-                 <span className="text-indigo-400 text-xs uppercase tracking-wider">Duplicates</span>
+               <div className="flex items-center gap-2 bg-[#0c251c]/70 px-4 py-2 rounded-xl border border-[#ADBC9F]/30">
+                 <span className="text-[#ADBC9F] text-xs uppercase tracking-wider">Duplicates</span>
                  <span className="font-mono text-white">{benchmark.duplicate_actions_total}</span>
                </div>
-               <div className="flex items-center gap-2 bg-indigo-950/50 px-4 py-2 rounded-xl border border-indigo-500/30">
-                 <span className="text-indigo-400 text-xs uppercase tracking-wider">Avg Latency</span>
+               <div className="flex items-center gap-2 bg-[#0c251c]/70 px-4 py-2 rounded-xl border border-[#ADBC9F]/30">
+                 <span className="text-[#ADBC9F] text-xs uppercase tracking-wider">Avg Latency</span>
                  <span className="font-mono text-white">{benchmark.average_latency_ms.toFixed(0)} ms</span>
                </div>
-               <div className="flex items-center gap-2 bg-indigo-950/50 px-4 py-2 rounded-xl border border-indigo-500/30">
-                 <span className="text-indigo-400 text-xs uppercase tracking-wider">p95 Latency</span>
+               <div className="flex items-center gap-2 bg-[#0c251c]/70 px-4 py-2 rounded-xl border border-[#ADBC9F]/30">
+                 <span className="text-[#ADBC9F] text-xs uppercase tracking-wider">p95 Latency</span>
                  <span className="font-mono text-white">{benchmark.p95_latency_ms.toFixed(0)} ms</span>
                </div>
-               <div className="flex items-center gap-2 bg-indigo-950/50 px-4 py-2 rounded-xl border border-indigo-500/30">
-                 <span className="text-indigo-400 text-xs uppercase tracking-wider">Experience Runs</span>
+               <div className="flex items-center gap-2 bg-[#0c251c]/70 px-4 py-2 rounded-xl border border-[#ADBC9F]/30">
+                 <span className="text-[#ADBC9F] text-xs uppercase tracking-wider">Experience Runs</span>
                  <span className="font-mono text-white">{benchmark.experience_informed_runs}</span>
                </div>
             </div>
