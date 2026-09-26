@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, 
   Workflow, 
@@ -23,6 +24,8 @@ const navigation = [
 ];
 
 export function Sidebar() {
+  const pathname = usePathname();
+
   if (typeof window !== 'undefined') {
     setTimeout(() => {
       const userStr = localStorage.getItem('user');
@@ -40,22 +43,26 @@ export function Sidebar() {
     }, 50);
   }
 
+  if (pathname === '/login') {
+    return null;
+  }
+
   return (
-    <div className="flex flex-col w-64 bg-slate-900 h-screen border-r border-slate-800">
-      <div className="flex items-center h-16 px-6 border-b border-slate-800 bg-slate-950">
+    <div className="flex flex-col w-64 bg-[#12372A] h-screen border-r border-[#1e4d3c]">
+      <div className="flex items-center h-16 px-6 border-b border-[#1e4d3c] bg-[#0c251c]">
         <span className="text-xl font-semibold text-white tracking-tight flex items-center gap-2">
-          <Workflow className="w-6 h-6 text-blue-500" />
+          <Workflow className="w-6 h-6 text-[#ADBC9F]" />
           FlowPilot AI
         </span>
       </div>
       
-      <div className="px-6 py-4 border-b border-slate-800 flex justify-between items-center">
+      <div className="px-6 py-4 border-b border-[#1e4d3c] flex justify-between items-center bg-[#1b4a39]/60">
         <div id="user-info" className="text-sm">
-          <div className="text-slate-300 font-medium user-name">User</div>
-          <div className="text-xs text-slate-500 user-role uppercase font-bold tracking-wider">Role</div>
+          <div className="text-[#FBFADA] font-medium user-name">User</div>
+          <div className="text-xs text-[#ADBC9F] user-role uppercase font-bold tracking-wider">Role</div>
         </div>
         <button 
-          className="text-xs bg-slate-800 text-slate-300 px-2 py-1 rounded hover:bg-slate-700"
+          className="text-xs bg-[#436850] text-[#FBFADA] px-2.5 py-1 rounded-md hover:bg-[#ADBC9F] hover:text-[#12372A] transition-colors font-medium"
           onClick={() => {
             if (typeof window !== 'undefined') {
               localStorage.removeItem('auth_token');
@@ -75,9 +82,9 @@ export function Sidebar() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-300 rounded-lg hover:bg-slate-800 hover:text-white transition-colors group"
+                className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-[#FBFADA] rounded-lg hover:bg-[#436850] hover:text-white transition-colors group"
               >
-                <item.icon className="w-5 h-5 text-slate-400 group-hover:text-blue-400 transition-colors" />
+                <item.icon className="w-5 h-5 text-[#ADBC9F] group-hover:text-white transition-colors" />
                 {item.name}
               </Link>
             );

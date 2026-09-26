@@ -283,7 +283,6 @@ export default function WorkflowControlCenter({ params }: { params: Promise<{ id
               <div className="text-xs text-slate-500 font-medium">Failures / Replans</div>
               <div className="text-base font-bold text-purple-600 mt-0.5">{workflow?.failures?.length ?? 0}</div>
             </div>
-            </div>
           </div>
         </section>
         {/* 1.5 ADAPTIVE CONTEXT & RETRIEVAL METRICS */}

@@ -6,6 +6,7 @@ from .payment_tool import get_payment_status_execute, get_payment_history_execut
 from .communication_tool import get_communication_history_execute, get_last_contact_execute
 from .policy_tool import get_policy_execute
 from .verification_tool import verify_action_execute
+from .data_analysis_tool import analyze_file_execute
 
 registry = ToolRegistry()
 
@@ -149,6 +150,17 @@ registry.register_tool(ToolDefinition(
     domain="security",
     capabilities=["verify", "action"],
     supported_entities=["action"]
+))
+
+registry.register_tool(ToolDefinition(
+    name="analyzeFile",
+    description="Analyzes an uploaded CSV or Excel file.",
+    inputSchema={"type": "object", "properties": {"filepath": {"type": "string", "description": "Path to the uploaded file"}, "query_type": {"type": "string", "enum": ["summary", "top_5", "search"], "description": "Type of analysis to perform"}, "target_column": {"type": "string", "description": "Column to target for top_5 or search"}, "search_value": {"type": "string", "description": "Value to search for if query_type is search"}}, "required": ["filepath", "query_type"]},
+    outputSchema={}, requiresApproval=False,
+    execute=analyze_file_execute,
+    domain="analytics",
+    capabilities=["read", "analysis", "file", "csv", "excel"],
+    supported_entities=["file", "data"]
 ))
 
 from .cross_app_tools import cross_app_tools
