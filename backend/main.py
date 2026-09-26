@@ -13,7 +13,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from agents.orchestrator import Orchestrator
 from backend.workflow_state import load_workflow_state, save_workflow_state
 from .database import get_db, Base, engine, SessionLocal
-from .models import Workflow, AuditEvent, Approval, Invoice, Customer, Payment, Communication, ToolExecution, Replan
+from .models import Workflow, AuditEvent, Approval, Invoice, Customer, Payment, Communication, ToolExecution, Replan, ExecutionMemory
 from .auth import router as auth_router, User, get_password_hash, get_current_user, require_role
 from .tool_registry import ToolContext
 from .tools import registry
@@ -29,7 +29,7 @@ app.include_router(auth_router)
 frontend_origin = os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[frontend_origin],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
