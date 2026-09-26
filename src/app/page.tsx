@@ -1,474 +1,348 @@
 "use client";
 
+import { Eye, DollarSign, Activity, MoreHorizontal, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import {
-  Workflow, CheckCircle, Clock, AlertCircle,
-  TrendingUp, TrendingDown, RotateCcw, Zap,
-  RefreshCw, PlusCircle, ArrowRight, Activity,
-  ShieldCheck, BarChart2, Users, Database
-} from "lucide-react";
-import Link from "next/link";
-import { useState, useEffect, useCallback } from "react";
-import { getMetrics, getWorkflows, getBenchmark, DashboardMetrics, WorkflowListItem } from "@/lib/api";
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
+} from 'recharts';
 
-/* ─────────────────────────────────────────────────
-   SKELETON
-───────────────────────────────────────────────── */
-function KpiSkeleton() {
-  return (
-    <div className="fp-kpi-card">
-      <div className="fp-skeleton h-3 w-20 mb-4 rounded" />
-      <div className="fp-skeleton h-9 w-16 mb-2 rounded" />
-      <div className="fp-skeleton h-2.5 w-28 rounded" />
-    </div>
-  );
-}
+const subscriberData = [
+  { name: 'Sun', value: 2000 },
+  { name: 'Mon', value: 2200 },
+  { name: 'Tue', value: 3874 },
+  { name: 'Wed', value: 1500 },
+  { name: 'Thu', value: 1800 },
+  { name: 'Fri', value: 2400 },
+  { name: 'Sat', value: 1200 },
+];
 
-function RowSkeleton() {
-  return (
-    <tr>
-      <td className="py-3 px-4"><div className="fp-skeleton h-3 w-48 rounded" /></td>
-      <td className="py-3 px-4"><div className="fp-skeleton h-3 w-16 rounded" /></td>
-      <td className="py-3 px-4"><div className="fp-skeleton h-3 w-20 rounded" /></td>
-      <td className="py-3 px-4"><div className="fp-skeleton h-3 w-24 rounded" /></td>
-    </tr>
-  );
-}
+const salesDistributionData = [
+  { name: 'Website', value: 374.82, color: '#5347CE' },
+  { name: 'Mobile App', value: 241.60, color: '#16C8C7' },
+  { name: 'Other', value: 213.42, color: '#F3F4F6' },
+];
 
-/* ─────────────────────────────────────────────────
-   STATUS BADGE
-───────────────────────────────────────────────── */
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    COMPLETED: "fp-badge fp-badge-completed",
-    RUNNING: "fp-badge fp-badge-running",
-    FAILED: "fp-badge fp-badge-failed",
-    WAITING_FOR_APPROVAL: "fp-badge fp-badge-waiting",
-    RECOVERED: "fp-badge fp-badge-recovered",
-  };
-  const cls = map[status] ?? "fp-badge fp-badge-pending";
-  const label = status === "WAITING_FOR_APPROVAL" ? "WAITING" : status;
-  return <span className={cls}>{label}</span>;
-}
-
-/* ─────────────────────────────────────────────────
-   KPI CARD
-───────────────────────────────────────────────── */
-interface KpiProps {
-  label: string;
-  value: number | string;
-  icon: React.ElementType;
-  color?: string;
-  trend?: "up" | "down" | "neutral";
-  sub?: string;
-  loading?: boolean;
-}
-
-function KpiCard({ label, value, icon: Icon, color = "var(--fp-indigo)", trend, sub, loading }: KpiProps) {
-  if (loading) return <KpiSkeleton />;
-  return (
-    <div className="fp-kpi-card">
-      <div className="flex items-start justify-between mb-3">
-        <span className="fp-label">{label}</span>
-        <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ background: `${color}18` }}
-        >
-          <Icon className="w-4 h-4" style={{ color }} />
-        </div>
-      </div>
-      <div className="fp-metric" style={{ color: "var(--fp-text)" }}>
-        {value}
-      </div>
-      {(sub || trend) && (
-        <div className="mt-2 flex items-center gap-1.5">
-          {trend === "up" && <TrendingUp className="w-3 h-3 text-[var(--fp-success)]" />}
-          {trend === "down" && <TrendingDown className="w-3 h-3 text-[var(--fp-error)]" />}
-          {sub && <span className="fp-small">{sub}</span>}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────────
-   BACKEND BANNER
-───────────────────────────────────────────────── */
-function BackendBanner({ error, onRetry }: { error: string; onRetry: () => void }) {
-  return (
-    <div
-      className="flex items-center justify-between px-4 py-3 rounded-lg border text-sm mb-6"
-      style={{
-        background: "var(--fp-error-bg)",
-        borderColor: "var(--fp-error-border)",
-        color: "var(--fp-error)",
-      }}
-    >
-      <div className="flex items-center gap-2">
-        <AlertCircle className="w-4 h-4 flex-shrink-0" />
-        <span><strong>Backend offline</strong> — {error}</span>
-      </div>
-      <button onClick={onRetry} className="fp-btn fp-btn-secondary text-xs px-3 py-1.5">
-        Retry
-      </button>
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────────
-   MAIN DASHBOARD
-───────────────────────────────────────────────── */
-const defaultMetrics: DashboardMetrics = {
-  invoices_analyzed: 0, actionable_cases: 0, monitoring_cases: 0,
-  approval_requests: 0, approved: 0, rejected: 0,
-  business_actions: 0, successful_actions: 0, failed_attempts: 0,
-  recovered_failures: 0, replans: 0, unresolved: 0
-};
+const integrationsData = [
+  { app: 'Stripe', type: 'Finance', rate: 40, profit: '$650.00', icon: 'S', color: '#5347CE' },
+  { app: 'Zapier', type: 'CRM', rate: 80, profit: '$720.50', icon: 'Z', color: '#F97316' },
+  { app: 'Shopify', type: 'Marketplace', rate: 20, profit: '$432.25', icon: 'S', color: '#22C55E' },
+  { app: 'Zoom', type: 'Technology', rate: 60, profit: '$650.00', icon: 'Z', color: '#3B82F6' },
+];
 
 export default function Dashboard() {
-  const [metrics, setMetrics] = useState<DashboardMetrics>(defaultMetrics);
-  const [workflows, setWorkflows] = useState<WorkflowListItem[]>([]);
-  const [benchmark, setBenchmark] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [backendError, setBackendError] = useState<string | null>(null);
-  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
-
-  const loadData = useCallback(async () => {
-    setIsLoading(true);
-    setBackendError(null);
-    try {
-      const [m, wfList, bench] = await Promise.all([
-        getMetrics(),
-        getWorkflows().catch(() => []),
-        getBenchmark().catch(() => null)
-      ]);
-      setMetrics(m);
-      setWorkflows(wfList);
-      setBenchmark(bench);
-      setLastRefresh(new Date());
-    } catch (err) {
-      setBackendError(err instanceof Error ? err.message : "Unable to connect to FlowPilot backend.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadData();
-    const interval = setInterval(loadData, 30000);
-    return () => clearInterval(interval);
-  }, [loadData]);
-
-  const successRate =
-    metrics.business_actions > 0
-      ? Math.round((metrics.successful_actions / metrics.business_actions) * 100)
-      : 0;
-
-  const kpis: KpiProps[] = [
-    {
-      label: "Active Workflows",
-      value: workflows.filter(w => w.status === "RUNNING").length,
-      icon: Workflow,
-      color: "var(--fp-indigo)",
-      sub: "Currently executing",
-    },
-    {
-      label: "Completed",
-      value: workflows.filter(w => w.status === "COMPLETED").length,
-      icon: CheckCircle,
-      color: "var(--fp-success)",
-      trend: "up",
-      sub: "All time",
-    },
-    {
-      label: "Pending Approvals",
-      value: metrics.approval_requests,
-      icon: ShieldCheck,
-      color: "var(--fp-warning)",
-      sub: "Awaiting review",
-    },
-    {
-      label: "Success Rate",
-      value: `${successRate}%`,
-      icon: TrendingUp,
-      color: successRate >= 80 ? "var(--fp-success)" : "var(--fp-warning)",
-      sub: `${metrics.successful_actions} of ${metrics.business_actions} actions`,
-    },
-    {
-      label: "Recovered Failures",
-      value: metrics.recovered_failures,
-      icon: RotateCcw,
-      color: "var(--fp-violet)",
-      sub: "Auto-healed by AI",
-    },
-    {
-      label: "Re-plans Triggered",
-      value: metrics.replans,
-      icon: Zap,
-      color: "var(--fp-teal)",
-      sub: "Dynamic adaptation",
-    },
-    {
-      label: "Invoices Analyzed",
-      value: metrics.invoices_analyzed,
-      icon: Database,
-      color: "var(--fp-indigo)",
-      sub: "Business data",
-    },
-    {
-      label: "Unresolved",
-      value: metrics.unresolved,
-      icon: AlertCircle,
-      color: metrics.unresolved > 0 ? "var(--fp-error)" : "var(--fp-success)",
-      sub: "Needs attention",
-    },
-  ];
-
   return (
-    <div className="space-y-6">
-      {/* ── Header row ── */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h2 className="fp-h2">Overview</h2>
-          <p className="fp-small mt-0.5">
-            {lastRefresh ? `Last updated ${lastRefresh.toLocaleTimeString()}` : "Loading data…"}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Backend status pill */}
-          <span
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold border"
-            style={
-              backendError
-                ? { background: "var(--fp-error-bg)", borderColor: "var(--fp-error-border)", color: "var(--fp-error)" }
-                : { background: "var(--fp-success-bg)", borderColor: "var(--fp-success-border)", color: "var(--fp-success)" }
-            }
-          >
-            <span
-              className="w-1.5 h-1.5 rounded-full"
-              style={{ background: backendError ? "var(--fp-error)" : "var(--fp-success)", ...(backendError ? {} : { animation: "pulse 2s infinite" }) }}
-            />
-            {backendError ? "Backend Offline" : "Live"}
-          </span>
-
-          <Link href="/workflows/new" className="fp-btn fp-btn-primary">
-            <PlusCircle className="w-4 h-4" />
-            New Workflow
-          </Link>
-
-          <button
-            onClick={loadData}
-            className="fp-btn fp-btn-secondary"
-            title="Refresh"
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
-          </button>
-        </div>
-      </div>
-
-      {backendError && <BackendBanner error={backendError} onRetry={loadData} />}
-
-      {/* ── KPI Grid ── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-4 gap-4">
-        {kpis.slice(0, 4).map(k => (
-          <KpiCard key={k.label} {...k} loading={isLoading} />
-        ))}
-      </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {kpis.slice(4).map(k => (
-          <KpiCard key={k.label} {...k} loading={isLoading} />
-        ))}
-      </div>
-
-      {/* ── Lower 2-col ── */}
-      <div className="grid lg:grid-cols-3 gap-6">
-
-        {/* Recent Workflows — 2/3 width */}
-        <div className="lg:col-span-2 fp-card">
-          <div className="fp-card-header">
-            <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4" style={{ color: "var(--fp-indigo)" }} />
-              <span className="fp-h3">Recent Workflows</span>
+    <div className="w-full max-w-7xl mx-auto space-y-6 pb-20">
+      
+      {/* TOP METRICS ROW */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Metric 1 */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
+              <Eye className="w-4 h-4" /> Page Views
             </div>
-            <Link
-              href="/workflows"
-              className="flex items-center gap-1 text-[12px] font-medium"
-              style={{ color: "var(--fp-indigo)" }}
-            >
-              View all <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+            <button className="text-gray-400 hover:text-gray-600"><MoreHorizontal className="w-4 h-4" /></button>
+          </div>
+          <div className="flex items-end gap-3">
+            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">12,450</h2>
+            <div className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded bg-[#16C8C7]/10 text-[#16C8C7] mb-1">
+              15.8% <ArrowUp className="w-3 h-3" />
+            </div>
+          </div>
+        </div>
+
+        {/* Metric 2 */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
+              <DollarSign className="w-4 h-4" /> Total Revenue
+            </div>
+            <button className="text-gray-400 hover:text-gray-600"><MoreHorizontal className="w-4 h-4" /></button>
+          </div>
+          <div className="flex items-end gap-3">
+            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">$363.95</h2>
+            <div className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded bg-pink-100 text-pink-500 mb-1">
+              34.0% <ArrowDown className="w-3 h-3" />
+            </div>
+          </div>
+        </div>
+
+        {/* Metric 3 */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
+              <Activity className="w-4 h-4" /> Bounce Rate
+            </div>
+            <button className="text-gray-400 hover:text-gray-600"><MoreHorizontal className="w-4 h-4" /></button>
+          </div>
+          <div className="flex items-end gap-3">
+            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">86.5%</h2>
+            <div className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded bg-[#16C8C7]/10 text-[#16C8C7] mb-1">
+              24.2% <ArrowUp className="w-3 h-3" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* MIDDLE ROW */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Sales Overview */}
+        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <div className="flex items-center gap-2 text-sm text-gray-500 font-medium mb-1">
+                <Activity className="w-4 h-4" /> Sales Overview
+              </div>
+              <div className="flex items-end gap-3">
+                <h2 className="text-2xl font-bold text-gray-900">$9,257.51</h2>
+                <div className="flex items-center gap-2 text-xs mb-1">
+                  <span className="font-semibold text-[#16C8C7]">15.8% <ArrowUp className="w-3 h-3 inline" /></span>
+                  <span className="text-gray-400">+$143.50 increased</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button className="flex items-center gap-1 text-xs font-medium border border-gray-200 rounded-md px-3 py-1.5 hover:bg-gray-50">
+                <Filter className="w-3 h-3" /> Filter
+              </button>
+              <button className="flex items-center gap-1 text-xs font-medium border border-gray-200 rounded-md px-3 py-1.5 hover:bg-gray-50">
+                Sort
+              </button>
+              <button className="border border-gray-200 rounded-md p-1.5 hover:bg-gray-50">
+                <MoreHorizontal className="w-4 h-4 text-gray-400" />
+              </button>
+            </div>
+          </div>
+          
+          {/* Custom Stacked Bar Chart Mock */}
+          <div className="h-64 mt-8 flex flex-col items-center justify-end pb-8 relative">
+             <div className="w-full flex justify-around items-end h-full px-12">
+                {/* Oct */}
+                <div className="flex flex-col items-center gap-1 w-20">
+                  <span className="text-xs font-bold text-gray-600 mb-2">$2,988.20</span>
+                  <div className="w-full bg-[#16C8C7] h-2 rounded-t-sm"></div>
+                  <div className="w-full bg-[#4896FE] h-10 rounded-sm"></div>
+                  <div className="w-full bg-[#887CFD] h-6 rounded-sm"></div>
+                  <div className="w-full bg-[#5347CE] h-8 rounded-b-sm"></div>
+                  <span className="text-xs text-gray-400 mt-2">Oct</span>
+                </div>
+                {/* Nov */}
+                <div className="flex flex-col items-center gap-1 w-20">
+                  <span className="text-xs font-bold text-gray-600 mb-2">$1,765.09</span>
+                  <div className="w-full bg-[#16C8C7] h-4 rounded-t-sm"></div>
+                  <div className="w-full bg-[#4896FE] h-6 rounded-sm"></div>
+                  <div className="w-full bg-[#887CFD] h-4 rounded-sm"></div>
+                  <div className="w-full bg-[#5347CE] h-4 rounded-b-sm"></div>
+                  <span className="text-xs text-gray-400 mt-2">Nov</span>
+                </div>
+                {/* Dec */}
+                <div className="flex flex-col items-center gap-1 w-20">
+                  <span className="text-xs font-bold text-gray-600 mb-2">$4,005.65</span>
+                  <div className="w-full bg-[#16C8C7] h-4 rounded-t-sm"></div>
+                  <div className="w-full bg-[#4896FE] h-12 rounded-sm"></div>
+                  <div className="w-full bg-[#887CFD] h-8 rounded-sm"></div>
+                  <div className="w-full bg-[#5347CE] h-16 rounded-b-sm"></div>
+                  <span className="text-xs text-gray-400 mt-2">Dec</span>
+                </div>
+             </div>
+             
+             {/* Legend */}
+             <div className="absolute bottom-0 flex items-center gap-4 text-[11px] font-medium text-gray-500">
+               <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-sm bg-[#5347CE]"></div> China</div>
+               <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-sm bg-[#887CFD]"></div> UE</div>
+               <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-sm bg-[#4896FE]"></div> USA</div>
+               <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-sm bg-[#16C8C7]"></div> Canada</div>
+               <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-sm bg-gray-200"></div> Other</div>
+             </div>
+          </div>
+        </div>
+
+        {/* Total Subscriber */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
+              <Eye className="w-4 h-4" /> Total Subscriber
+            </div>
+            <select className="text-xs font-medium bg-gray-50 border border-gray-200 rounded-md px-2 py-1 outline-none">
+              <option>Weekly</option>
+            </select>
+          </div>
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">24,473</h2>
+            <div className="flex items-center gap-2 text-xs mt-1">
+              <span className="font-semibold text-[#16C8C7] px-1.5 py-0.5 rounded bg-[#16C8C7]/10">8.3% <ArrowUp className="w-3 h-3 inline" /></span>
+              <span className="text-gray-400">+ 749 increased</span>
+            </div>
+          </div>
+          
+          <div className="flex-1 min-h-[200px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={subscriberData} margin={{ top: 20, right: 0, left: 0, bottom: 0 }}>
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 11, fill: '#9CA3AF' }}
+                  dy={10}
+                />
+                <Tooltip 
+                  cursor={{ fill: 'transparent' }}
+                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                />
+                <Bar 
+                  dataKey="value" 
+                  radius={[4, 4, 4, 4]} 
+                  barSize={24}
+                >
+                  {subscriberData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.name === 'Tue' ? 'url(#colorPurpleGradient)' : '#E5E7EB'} 
+                    />
+                  ))}
+                </Bar>
+                <defs>
+                  <linearGradient id="colorPurpleGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#887CFD" />
+                    <stop offset="100%" stopColor="#5347CE" />
+                  </linearGradient>
+                </defs>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* BOTTOM ROW */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Sales Distribution */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
+              <Activity className="w-4 h-4" /> Sales Distribution
+            </div>
+            <select className="text-xs font-medium bg-gray-50 border border-gray-200 rounded-md px-2 py-1 outline-none">
+              <option>Monthly</option>
+            </select>
           </div>
 
-          <div style={{ overflowX: "auto" }}>
-            <table className="fp-table">
+          <div className="flex justify-between px-2 mb-8">
+            <div className="text-center">
+              <div className="text-[10px] font-bold text-[#5347CE] uppercase tracking-wider mb-1 flex items-center gap-1 justify-center">
+                <div className="w-1.5 h-3 bg-[#5347CE] rounded-full"></div> Website
+              </div>
+              <div className="font-bold text-gray-900">$374.82</div>
+            </div>
+            <div className="text-center">
+              <div className="text-[10px] font-bold text-[#16C8C7] uppercase tracking-wider mb-1 flex items-center gap-1 justify-center">
+                <div className="w-1.5 h-3 bg-[#16C8C7] rounded-full"></div> Mobile App
+              </div>
+              <div className="font-bold text-gray-900">$241.60</div>
+            </div>
+            <div className="text-center">
+              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+                Other
+              </div>
+              <div className="font-bold text-gray-900">$213.42</div>
+            </div>
+          </div>
+
+          <div className="flex-1 w-full flex items-center justify-center -mt-6">
+            <ResponsiveContainer width="100%" height={160}>
+              <PieChart>
+                <Pie
+                  data={salesDistributionData}
+                  cx="50%"
+                  cy="100%"
+                  startAngle={180}
+                  endAngle={0}
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                  stroke="none"
+                  cornerRadius={4}
+                >
+                  {salesDistributionData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* List of Integration */}
+        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
+              <Activity className="w-4 h-4" /> List of Integration
+            </div>
+            <button className="text-xs font-semibold text-[#5347CE] hover:underline">
+              See All
+            </button>
+          </div>
+
+          <div className="w-full overflow-x-auto">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr>
-                  <th>Workflow</th>
-                  <th>Status</th>
-                  <th>Mode</th>
-                  <th>Created</th>
-                  <th />
+                <tr className="text-[10px] uppercase tracking-wider text-gray-400 border-b border-gray-100">
+                  <th className="pb-3 font-semibold pl-2 w-10">
+                    <input type="checkbox" className="rounded border-gray-300 text-[#5347CE]" />
+                  </th>
+                  <th className="pb-3 font-semibold">Application</th>
+                  <th className="pb-3 font-semibold">Type</th>
+                  <th className="pb-3 font-semibold">Rate</th>
+                  <th className="pb-3 font-semibold text-right">Profit</th>
                 </tr>
               </thead>
-              <tbody>
-                {isLoading && workflows.length === 0
-                  ? [1,2,3,4].map(i => <RowSkeleton key={i} />)
-                  : workflows.length === 0
-                  ? (
-                    <tr>
-                      <td colSpan={5}>
-                        <div className="fp-empty">
-                          <Workflow className="w-8 h-8" style={{ color: "var(--fp-text-faint)" }} />
-                          <p className="fp-h3" style={{ color: "var(--fp-text-muted)" }}>No workflows yet</p>
-                          <p className="fp-small">Create your first intelligent workflow to get started.</p>
-                          <Link href="/workflows/new" className="fp-btn fp-btn-primary mt-2">
-                            <PlusCircle className="w-4 h-4" /> Create Workflow
-                          </Link>
+              <tbody className="text-sm">
+                {integrationsData.map((item, i) => (
+                  <tr key={i} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50">
+                    <td className="py-4 pl-2">
+                      <input type="checkbox" className="rounded border-gray-300 text-[#5347CE]" />
+                    </td>
+                    <td className="py-4">
+                      <div className="flex items-center gap-3">
+                        <div 
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs"
+                          style={{ backgroundColor: item.color }}
+                        >
+                          {item.icon}
                         </div>
-                      </td>
-                    </tr>
-                  )
-                  : workflows.slice(0, 6).map(wf => (
-                    <tr key={wf.id} style={{ cursor: "pointer" }}>
-                      <td>
-                        <Link
-                          href={`/workflows/${wf.id}`}
-                          className="font-medium text-[var(--fp-text)] hover:text-[var(--fp-indigo)] transition-colors block max-w-xs truncate"
-                        >
-                          {wf.objective}
-                        </Link>
-                        <span className="fp-small font-mono">#{wf.id.slice(0, 8)}</span>
-                      </td>
-                      <td><StatusBadge status={wf.status} /></td>
-                      <td>
-                        <span className="fp-small font-medium capitalize">{wf.mode}</span>
-                      </td>
-                      <td>
-                        <span className="fp-small">
-                          {wf.created_at ? new Date(wf.created_at).toLocaleDateString() : "—"}
-                        </span>
-                      </td>
-                      <td>
-                        <Link
-                          href={`/workflows/${wf.id}`}
-                          className="p-1 rounded hover:bg-[var(--fp-indigo-light)] transition-colors inline-flex"
-                          style={{ color: "var(--fp-text-muted)" }}
-                        >
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </Link>
-                      </td>
-                    </tr>
-                  ))
-                }
+                        <span className="font-semibold text-gray-800">{item.app}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 text-gray-500 font-medium">{item.type}</td>
+                    <td className="py-4">
+                      <div className="flex items-center gap-3 w-40">
+                        <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full rounded-full" 
+                            style={{ width: `${item.rate}%`, backgroundColor: '#5347CE' }}
+                          ></div>
+                        </div>
+                        <span className="text-xs font-semibold text-gray-600 w-8">{item.rate}%</span>
+                      </div>
+                    </td>
+                    <td className="py-4 text-right font-semibold text-gray-800">{item.profit}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
         </div>
-
-        {/* Workflow Health — 1/3 width */}
-        <div className="fp-card">
-          <div className="fp-card-header">
-            <div className="flex items-center gap-2">
-              <BarChart2 className="w-4 h-4" style={{ color: "var(--fp-indigo)" }} />
-              <span className="fp-h3">Workflow Health</span>
-            </div>
-          </div>
-          <div className="fp-card-body space-y-4">
-            {[
-              {
-                label: "Completed",
-                value: workflows.filter(w => w.status === "COMPLETED").length,
-                total: workflows.length,
-                color: "var(--fp-success)",
-              },
-              {
-                label: "Running",
-                value: workflows.filter(w => w.status === "RUNNING").length,
-                total: workflows.length,
-                color: "var(--fp-indigo)",
-              },
-              {
-                label: "Waiting Approval",
-                value: workflows.filter(w => w.status === "WAITING_FOR_APPROVAL").length,
-                total: workflows.length,
-                color: "var(--fp-warning)",
-              },
-              {
-                label: "Failed",
-                value: workflows.filter(w => w.status === "FAILED").length,
-                total: workflows.length,
-                color: "var(--fp-error)",
-              },
-            ].map(stat => {
-              const pct = workflows.length > 0 ? Math.round((stat.value / workflows.length) * 100) : 0;
-              return (
-                <div key={stat.label}>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="fp-small font-medium">{stat.label}</span>
-                    <span className="fp-small font-semibold">{stat.value}</span>
-                  </div>
-                  <div className="h-1.5 rounded-full" style={{ background: "var(--fp-border)" }}>
-                    <div
-                      className="h-1.5 rounded-full transition-all duration-700"
-                      style={{ width: `${pct}%`, background: stat.color }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* AI metrics */}
-            <div
-              className="mt-4 pt-4 space-y-3"
-              style={{ borderTop: "1px solid var(--fp-border-light)" }}
-            >
-              <p className="fp-label">AI Operations</p>
-              {[
-                { label: "Approval Requests", value: metrics.approval_requests, icon: ShieldCheck, color: "var(--fp-warning)" },
-                { label: "Re-plans", value: metrics.replans, icon: Zap, color: "var(--fp-violet)" },
-                { label: "Recovered", value: metrics.recovered_failures, icon: RotateCcw, color: "var(--fp-success)" },
-              ].map(m => (
-                <div key={m.label} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <m.icon className="w-3.5 h-3.5" style={{ color: m.color }} />
-                    <span className="fp-small">{m.label}</span>
-                  </div>
-                  <span className="fp-small font-semibold">{m.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
       </div>
-
-      {/* ── Benchmark Results (only if backend returned data) ── */}
-      {benchmark?.runs_executed > 0 && (
-        <div className="fp-card">
-          <div className="fp-card-header">
-            <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4" style={{ color: "var(--fp-indigo)" }} />
-              <span className="fp-h3">Evaluation Suite</span>
-              <span className="fp-badge fp-badge-running" style={{ fontSize: 10 }}>
-                {benchmark.runs_executed} Runs
-              </span>
-            </div>
-          </div>
-          <div className="fp-card-body">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { label: "Success Rate",      value: `${benchmark.aggregate_success_rate?.toFixed(1)}%`,    color: "var(--fp-success)" },
-                { label: "Final-State Match", value: `${benchmark.final_state_correctness?.toFixed(1)}%`,   color: "var(--fp-indigo)" },
-                { label: "Failure Recovery",  value: `${benchmark.recovery_success_rate?.toFixed(1)}%`,     color: "var(--fp-violet)" },
-                { label: "Policy Safety",     value: `${benchmark.approval_correctness?.toFixed(1)}%`,      color: "var(--fp-teal)" },
-              ].map(s => (
-                <div key={s.label} className="text-center p-4 rounded-lg" style={{ background: "var(--fp-surface-2)" }}>
-                  <div className="fp-label mb-2">{s.label}</div>
-                  <div className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

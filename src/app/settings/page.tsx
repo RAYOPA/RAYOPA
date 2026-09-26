@@ -1,53 +1,111 @@
 "use client";
 
-import { Settings as SettingsIcon, Save, Key, User, Shield } from "lucide-react";
+import { Settings as SettingsIcon, Server, Cpu, Shield, Database, CheckCircle2, Lock } from 'lucide-react';
 
 export default function SettingsPage() {
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h2 className="fp-h2">Settings</h2>
-          <p className="fp-small mt-0.5">Manage platform configuration and user preferences.</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button className="fp-btn fp-btn-primary">
-            <Save className="w-4 h-4" /> Save Changes
-          </button>
-        </div>
+    <div className="max-w-4xl mx-auto w-full pb-20">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+          <SettingsIcon className="w-7 h-7 text-blue-600" />
+          System Settings & Environment
+        </h1>
+        <p className="text-slate-500 mt-1">Runtime configuration and active system status for FlowPilot AI.</p>
       </div>
 
-      <div className="grid md:grid-cols-4 gap-6">
-        <div className="space-y-1">
-          <button className="w-full text-left px-3 py-2 rounded-md text-sm font-medium bg-[var(--fp-surface-2)] text-[var(--fp-text)] flex items-center gap-2">
-            <User className="w-4 h-4 text-[var(--fp-text-muted)]" /> Profile
-          </button>
-          <button className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-[var(--fp-text-muted)] hover:bg-[var(--fp-surface-2)] flex items-center gap-2 transition-colors">
-            <Shield className="w-4 h-4 text-[var(--fp-text-muted)]" /> Security
-          </button>
-          <button className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-[var(--fp-text-muted)] hover:bg-[var(--fp-surface-2)] flex items-center gap-2 transition-colors">
-            <Key className="w-4 h-4 text-[var(--fp-text-muted)]" /> API Keys
-          </button>
+      <div className="space-y-6">
+        {/* RUNTIME ARCHITECTURE */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <Cpu className="w-6 h-6 text-purple-600" />
+            <div>
+              <h2 className="text-base font-bold text-slate-900">AI Cognitive Core</h2>
+              <p className="text-xs text-slate-500">Local inference model and runtime parameters</p>
+            </div>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-4 text-xs font-mono">
+            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+              <span className="text-slate-400 block mb-1">Local Provider:</span>
+              <span className="font-bold text-slate-800">Ollama API (127.0.0.1:11434)</span>
+            </div>
+            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+              <span className="text-slate-400 block mb-1">Inference Model:</span>
+              <span className="font-bold text-slate-800">qwen3:8b (think=false)</span>
+            </div>
+            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+              <span className="text-slate-400 block mb-1">Acceleration:</span>
+              <span className="font-bold text-green-700 flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5" /> NVIDIA RTX 4050 GPU
+              </span>
+            </div>
+            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+              <span className="text-slate-400 block mb-1">Max Output Tokens:</span>
+              <span className="font-bold text-slate-800">260 tokens (num_predict)</span>
+            </div>
+          </div>
         </div>
 
-        <div className="md:col-span-3 space-y-6">
-          <div className="fp-card">
-            <div className="fp-card-header">
-              <span className="fp-h3">Profile Settings</span>
+        {/* BACKEND & DATABASE */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <Server className="w-6 h-6 text-blue-600" />
+            <div>
+              <h2 className="text-base font-bold text-slate-900">Backend Server & API</h2>
+              <p className="text-xs text-slate-500">FastAPI gateway and database storage</p>
             </div>
-            <div className="fp-card-body space-y-4">
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-4 text-xs font-mono">
+            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+              <span className="text-slate-400 block mb-1">API Base URL:</span>
+              <span className="font-bold text-blue-600">{backendUrl}</span>
+            </div>
+            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+              <span className="text-slate-400 block mb-1">Orchestration Engine:</span>
+              <span className="font-bold text-slate-800">LangGraph (StateGraph)</span>
+            </div>
+            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+              <span className="text-slate-400 block mb-1">Database Dialect:</span>
+              <span className="font-bold text-slate-800">PostgreSQL / SQLite fallback</span>
+            </div>
+            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+              <span className="text-slate-400 block mb-1">Email Tool Sandbox:</span>
+              <span className="font-bold text-amber-700">SANDBOX (Simulation)</span>
+            </div>
+          </div>
+        </div>
+
+        {/* SECURITY & GOVERNANCE */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            <Shield className="w-6 h-6 text-green-600" />
+            <div>
+              <h2 className="text-base font-bold text-slate-900">Security & Approvals Policy</h2>
+              <p className="text-xs text-slate-500">Immutable ledger and human verification thresholds</p>
+            </div>
+          </div>
+
+          <div className="space-y-3 text-xs text-slate-600">
+            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
               <div>
-                <label className="block text-sm font-medium text-[var(--fp-text)] mb-1">Display Name</label>
-                <input type="text" className="fp-input max-w-md" defaultValue="Admin User" />
+                <span className="font-bold text-slate-800">High-Value Escalation Threshold:</span>
+                <p className="text-[11px] text-slate-500 mt-0.5">Invoices &gt; ₹50,000 or customer risk level = HIGH</p>
               </div>
+              <span className="font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded text-[10px] uppercase">
+                Active
+              </span>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
               <div>
-                <label className="block text-sm font-medium text-[var(--fp-text)] mb-1">Email Address</label>
-                <input type="email" className="fp-input max-w-md" defaultValue="admin@flowpilot.ai" />
+                <span className="font-bold text-slate-800">Immutable Audit Logging:</span>
+                <p className="text-[11px] text-slate-500 mt-0.5">Every tool invocation, planning step, and user approval is recorded to audit_events table</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-[var(--fp-text)] mb-1">Role</label>
-                <input type="text" className="fp-input max-w-md bg-[var(--fp-surface-2)] cursor-not-allowed" defaultValue="Superadmin" disabled />
-              </div>
+              <span className="font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded text-[10px] uppercase">
+                Enforced
+              </span>
             </div>
           </div>
         </div>

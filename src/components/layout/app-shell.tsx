@@ -1,16 +1,15 @@
-"use client";
+'use client';
 
-import { usePathname } from "next/navigation";
-import { Sidebar } from "@/components/layout/sidebar";
-import { Topbar } from "@/components/layout/topbar";
+import { usePathname } from 'next/navigation';
+import { Sidebar } from '@/components/layout/sidebar';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAuthPage =
-    pathname === "/login" ||
-    pathname?.startsWith("/login") ||
-    pathname === "/signup" ||
-    pathname?.startsWith("/signup");
+  const isAuthPage = 
+    pathname === '/login' || 
+    pathname?.startsWith('/login') || 
+    pathname === '/signup' || 
+    pathname?.startsWith('/signup');
 
   if (isAuthPage) {
     return (
@@ -21,17 +20,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden w-full" style={{ background: "var(--fp-bg)" }}>
+    <div className="flex h-screen overflow-hidden w-full">
       <Sidebar />
-      <div className="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
-        <Topbar />
-        <main
-          className="flex-1 overflow-y-auto fp-page-enter"
-          style={{ background: "var(--fp-bg)" }}
-        >
-          <div className="p-6 lg:p-8 max-w-screen-2xl mx-auto">
-            {children}
-          </div>
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        <main className="flex-1 overflow-y-auto p-8 bg-[#F4F7FB] text-[#1E293B]">
+          {children}
         </main>
       </div>
     </div>
