@@ -1,0 +1,8 @@
+invoice_id,customer_id,customer_name,customer_email,invoice_amount,currency,invoice_date,due_date,status,days_overdue,last_contact_date,payment_status,risk_level
+INV-1001,cust-1,Alpha Corp,alpha@acme.com,60000,INR,2023-09-01,2023-09-15,OVERDUE,10,,UNPAID,LOW
+INV-1002,cust-2,Beta Inc,beta@acme.com,120000,INR,2023-08-01,2023-08-15,OVERDUE,40,,UNPAID,HIGH
+INV-1003,cust-3,Gamma LLC,gamma@acme.com,600000,INR,2023-09-01,2023-09-15,OVERDUE,10,,UNPAID,HIGH
+INV-1004,cust-4,Delta Logistics,invalid@acme.com,80000,INR,2023-09-01,2023-09-15,OVERDUE,10,,UNPAID,LOW
+INV-1005,cust-5,Epsilon Group,epsilon@acme.com,70000,INR,2023-09-01,2023-09-15,OVERDUE,10,,UNPAID,LOW
+INV-1006,cust-6,Zeta Partners,zeta@acme.com,150000,INR,2023-09-05,2023-09-20,OVERDUE,5,,UNPAID,MEDIUM
+INV-1009,cust-7,Eta Systems,eta@acme.com,55000,INR,2023-09-15,2023-10-15,PAYMENT_EXTENDED,0,,UNPAID,LOW

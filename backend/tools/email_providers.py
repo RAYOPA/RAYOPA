@@ -243,6 +243,18 @@ class SMTPEmailProvider(EmailProvider):
                 timestamp=now_ts
             )
 
+        # HACKATHON DEMO REQUIREMENT: SIMULATE FAILURE FOR "invalid" RECIPIENT
+        if "invalid" in recipient.lower():
+            return EmailSendResult(
+                success=False,
+                status="FAILED",
+                provider="smtp",
+                recipient=recipient,
+                subject=subject,
+                error="SMTP Recipient refused: Mailbox does not exist (SIMULATED)",
+                timestamp=now_ts
+            )
+
         clean_recipient = recipient.strip()
         # Header injection guard: reject CR or LF in recipient or subject
         if "\r" in clean_recipient or "\n" in clean_recipient:

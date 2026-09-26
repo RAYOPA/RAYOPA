@@ -11,3 +11,5 @@ python-dotenv
 pyjwt
 bcrypt
 langgraph
+google-auth
+requests

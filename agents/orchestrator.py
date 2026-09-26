@@ -51,19 +51,25 @@ class Orchestrator:
         if state is None:
             raise ValueError("Workflow not found in database")
             
+        print("RESUME_WORKFLOW starting. state.status:", state.status)
         if state.status == "WAITING_FOR_APPROVAL":
             state.status = "APPROVED"
+            save_workflow_state(workflow_id, state)
             
         logger.log_event("Orchestrator", "Workflow Resumed", {"workflow_id": workflow_id})
         
         try:
+            print("RESUME_WORKFLOW before stream")
             for event in self.graph.stream(state):
+                print("RESUME_WORKFLOW event:", list(event.keys()))
                 for k, v in event.items():
                     if isinstance(v, dict):
                         v = State(**v)
+                    print("RESUME_WORKFLOW saving state from node:", k, "status:", v.status)
                     save_workflow_state(workflow_id, v)
                     
             final_state = load_workflow_state(workflow_id) or state
+            print("RESUME_WORKFLOW stream finished. final_state.status:", final_state.status)
             
             if isinstance(final_state, dict):
                 final_state = State(**final_state)
@@ -77,5 +83,6 @@ class Orchestrator:
                 logger.log_event("Orchestrator", "Workflow Failed", {"failures": final_state.failures})
                 memory_layer.save_memory(final_state)
         except Exception as e:
+            print("RESUME_WORKFLOW exception:", str(e))
             logger.log_event("Orchestrator", "Workflow Failed", {"error": str(e)})
             raise e

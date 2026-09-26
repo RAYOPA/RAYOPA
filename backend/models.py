@@ -10,6 +10,9 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     password_hash = Column(String, nullable=False)
     role = Column(String, nullable=False) # admin, operator, viewer
+    email = Column(String, unique=True, index=True, nullable=True)
+    google_id = Column(String, unique=True, index=True, nullable=True)
+    email_verified = Column(Boolean, default=False)
     created_at = Column(DateTime, server_default=func.now())
 
 class Customer(Base):

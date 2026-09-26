@@ -34,7 +34,20 @@ Successful Actions: ${JSON.stringify(payload.successful_actions)}
 Failed Actions: ${JSON.stringify(payload.failed_actions)}
 Failures: ${JSON.stringify(payload.failures)}
 
-Generate the reflection matching the required schema. Ensure it explicitly records any known failure patterns and their recovery strategies (like alternative data sources).`;
+Generate the reflection matching the required schema exactly (do NOT wrap it in a parent key). Ensure it explicitly records any known failure patterns and their recovery strategies (like alternative data sources).
+
+JSON output format:
+{
+  "summary": "string",
+  "successful_strategy": ["string"],
+  "failure_patterns": ["string"],
+  "recovery_strategy": ["string"],
+  "lessons": ["string"],
+  "avoid_actions": ["string"],
+  "confidence": 0.9,
+  "workflow_domain": "string",
+  "applications_involved": ["string"]
+}`;
 
     const response = await this.ai.generateStructured<Reflection>(prompt, ReflectionSchema, systemInstruction);
     return response.structured_output;
