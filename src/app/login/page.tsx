@@ -44,8 +44,45 @@ export default function LoginPage() {
       }
 
       if (!tokenRes.ok) {
+        // If login failed, check if this is a new email attempting to sign in
+        // Auto-create their account seamlessly so any real Gmail/email works immediately!
+        if (email.includes('@') && pass.length >= 6) {
+          try {
+            const autoSignupRes = await fetch(`${apiBase}/api/auth/signup`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: email.trim(),
+                password: pass,
+                name: email.split('@')[0],
+                role: 'operator',
+              }),
+            });
+
+            if (autoSignupRes.ok) {
+              // Successfully auto-created! Now log in with these credentials
+              const retryLoginRes = await fetch(`${apiBase}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData.toString(),
+              });
+
+              if (retryLoginRes.ok) {
+                const { access_token } = await retryLoginRes.json();
+                setAuthToken(access_token);
+                const userRes = await apiFetch<any>('/api/auth/me');
+                setUser(userRes);
+                router.push('/');
+                return;
+              }
+            }
+          } catch {
+            // Fall through to standard error message
+          }
+        }
+
         const errJson = await tokenRes.json().catch(() => ({}));
-        throw new Error(errJson.detail || 'Incorrect email or password. If you do not have an account, switch to Create Account above.');
+        throw new Error(errJson.detail || 'Incorrect password for this account. If creating a new account, password must be at least 6 characters.');
       }
 
       const { access_token } = await tokenRes.json();

@@ -401,16 +401,22 @@ export function AuthUI({
             {mode === 'signin' ? (
               <form className="space-y-4" onSubmit={handleSignInSubmit}>
                 <div className="space-y-1.5">
-                  <Label htmlFor="email" className="text-gray-700 font-medium">Email Address</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="email" className="text-gray-700 font-medium">Email Address</Label>
+                    <span className="text-[11px] text-purple-600 font-semibold">Any Gmail / Email works!</span>
+                  </div>
                   <Input 
                     id="email" 
                     name="email" 
                     type="text" 
-                    placeholder="e.g. name@example.com" 
+                    placeholder="e.g. yourname@gmail.com" 
                     value={signInEmail}
                     onChange={(e) => setSignInEmail(e.target.value)}
                     required 
                   />
+                  <p className="text-[11px] text-gray-500">
+                    Enter any personal or business email. New accounts are created automatically on Sign In!
+                  </p>
                 </div>
                 
                 <div className="space-y-1.5">
@@ -418,7 +424,7 @@ export function AuthUI({
                   <PasswordInput 
                     id="password" 
                     name="password" 
-                    placeholder="Enter your password" 
+                    placeholder="Enter your password (min 6 chars)" 
                     value={signInPassword}
                     onChange={(e) => setSignInPassword(e.target.value)}
                     required 
@@ -443,13 +449,13 @@ export function AuthUI({
                 </div>
                 
                 <Button type="submit" className="w-full mt-2 text-base font-semibold" disabled={loading}>
-                  {loading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Authenticating...</> : "Sign In"}
+                  {loading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Authenticating...</> : "Sign In with Email / Gmail"}
                 </Button>
 
                 {/* Pre-seeded Quick Demo Accounts */}
                 <div className="space-y-1.5 pt-1">
                   <div className="flex items-center justify-between text-[11px] text-gray-400 font-medium uppercase tracking-wider">
-                    <span>Quick Demo Logins (Click to fill)</span>
+                    <span>Quick Test Accounts (Optional shortcuts)</span>
                   </div>
                   <div className="grid grid-cols-2 gap-1.5 text-xs">
                     <button

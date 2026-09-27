@@ -73,6 +73,11 @@ export default function SignUpPage() {
 
       if (!signupRes.ok) {
         const errorData = await signupRes.json().catch(() => ({}));
+        // If account already exists, attempt to log in seamlessly
+        if (errorData.detail?.includes('already exists')) {
+          await performLogin(data.email.trim(), data.password);
+          return;
+        }
         throw new Error(errorData.detail || 'Failed to create account.');
       }
 
