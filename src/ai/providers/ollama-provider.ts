@@ -44,7 +44,7 @@ export class OllamaProvider implements AIProvider {
           think: false,
           options: {
             temperature: 0.2,
-            num_predict: 400
+            num_predict: 1200
           }
         })
       });

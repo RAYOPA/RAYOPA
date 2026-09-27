@@ -144,7 +144,7 @@ export default function WorkflowControlCenter({ params }: { params: Promise<{ id
       <header className="bg-slate-950 text-white px-8 py-4 flex items-center justify-between sticky top-0 z-50 border-b border-slate-800 shadow-md">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold tracking-tight">FLOWPILOT AI</h1>
+            <h1 className="text-xl font-bold tracking-tight">NOCODE AI</h1>
             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-green-900/50 text-green-400 border border-green-800/50">
               LIVE MODE
             </span>
@@ -517,7 +517,7 @@ export default function WorkflowControlCenter({ params }: { params: Promise<{ id
               Dynamic Failure Recovery & Replanning
             </div>
             <p className="text-sm text-purple-800/90 mb-4">
-              FlowPilot detected an execution failure, captured error context, and autonomously triggered the Dynamic Planner to formulate a recovery plan.
+              Nocode detected an execution failure, captured error context, and autonomously triggered the Dynamic Planner to formulate a recovery plan.
             </p>
             <div className="space-y-2">
               {workflow.failures.map((f, idx) => (
@@ -602,7 +602,7 @@ export default function WorkflowControlCenter({ params }: { params: Promise<{ id
             </div>
             
             <p className="text-sm text-indigo-800/90 mb-6 italic">
-              "What did FlowPilot learn from this execution, and how does that affect the next one?"
+              "What did Nocode learn from this execution, and how does that affect the next one?"
             </p>
 
             <div className="grid md:grid-cols-2 gap-4 mb-4">

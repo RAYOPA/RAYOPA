@@ -9,7 +9,7 @@ export class DynamicPlanner {
   async plan(objective: Objective, contextData?: string): Promise<Plan> {
     const tools = getAvailableToolsDescription();
 
-    const systemInstruction = `You are the Dynamic Planner for FlowPilot AI.
+    const systemInstruction = `You are the Dynamic Planner for Nocode AI.
 Output ONLY a minimal JSON execution plan using authoritative tools.
 
 RULES:

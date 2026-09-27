@@ -38,7 +38,7 @@ export default function TemplatesPage() {
           <Layers className="w-7 h-7 text-blue-600" />
           Workflow Templates
         </h1>
-        <p className="text-slate-500 mt-1">Pre-configured autonomous business objective templates for FlowPilot AI.</p>
+        <p className="text-slate-500 mt-1">Pre-configured autonomous business objective templates for Nocode AI.</p>
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -44,28 +44,46 @@ def seed_initial_data(db: Session):
             db.add_all([u1, u2, u3])
             db.commit()
 
-        if db.query(Customer).count() == 0:
-            c1 = Customer(id="cust-1", name="Alpha Corp", email="alpha@acme.com")
-            c2 = Customer(id="cust-2", name="Beta Inc", email="beta@acme.com")
-            c3 = Customer(id="cust-3", name="Gamma LLC", email="gamma@acme.com")
-            c4 = Customer(id="cust-4", name="Delta Logistics", email="invalid@acme.com", phone="valid@deltalogistics.com")
-            c5 = Customer(id="cust-5", name="Epsilon Group", email="epsilon@acme.com")
-            c6 = Customer(id="cust-6", name="Zeta Partners", email="zeta@acme.com")
-            c7 = Customer(id="cust-7", name="Eta Systems", email="eta@acme.com")
-            db.add_all([c1, c2, c3, c4, c5, c6, c7])
-            db.commit()
+        # Seed base customers
+        sample_customers = [
+            Customer(id="cust-1", name="Alpha Corp", email="alpha@acme.com"),
+            Customer(id="cust-2", name="Beta Inc", email="beta@acme.com"),
+            Customer(id="cust-3", name="Gamma LLC", email="gamma@acme.com"),
+            Customer(id="cust-4", name="Delta Logistics", email="invalid@acme.com", phone="valid@deltalogistics.com"),
+            Customer(id="cust-5", name="Epsilon Group", email="epsilon@acme.com"),
+            Customer(id="cust-6", name="Zeta Partners", email="zeta@acme.com"),
+            Customer(id="cust-7", name="Eta Systems", email="eta@acme.com"),
+            Customer(id="cust-8", name="Nexus Technologies", email="finance@nexustech.io"),
+            Customer(id="cust-9", name="Aura Health & Care", email="billing@aurahealth.org"),
+            Customer(id="cust-10", name="Summit Global Retail", email="accounts@summitglobal.com"),
+            Customer(id="cust-11", name="Quantum Cloud Systems", email="payments@quantumcloud.dev"),
+            Customer(id="cust-12", name="Horizon Media Labs", email="invoicing@horizonmedialabs.com"),
+        ]
+        for c in sample_customers:
+            if not db.query(Customer).filter(Customer.id == c.id).first():
+                db.add(c)
+        db.commit()
 
-        if db.query(Invoice).count() == 0:
-            now = datetime.datetime.now()
-            i1 = Invoice(id="inv-1001", invoice_number="INV-1001", customer_id="cust-1", amount=60000.0, due_date=now - datetime.timedelta(days=10), days_overdue=10, status="OVERDUE")
-            i2 = Invoice(id="inv-1002", invoice_number="INV-1002", customer_id="cust-2", amount=120000.0, due_date=now - datetime.timedelta(days=40), days_overdue=40, status="OVERDUE")
-            i3 = Invoice(id="inv-1003", invoice_number="INV-1003", customer_id="cust-3", amount=600000.0, due_date=now - datetime.timedelta(days=10), days_overdue=10, status="OVERDUE")
-            i4 = Invoice(id="inv-1004", invoice_number="INV-1004", customer_id="cust-4", amount=80000.0, due_date=now - datetime.timedelta(days=10), days_overdue=10, status="OVERDUE")
-            i5 = Invoice(id="inv-1005", invoice_number="INV-1005", customer_id="cust-5", amount=70000.0, due_date=now - datetime.timedelta(days=10), days_overdue=10, status="OVERDUE")
-            i6 = Invoice(id="inv-1006", invoice_number="INV-1006", customer_id="cust-6", amount=150000.0, due_date=now - datetime.timedelta(days=5), days_overdue=5, status="OVERDUE")
-            i9 = Invoice(id="inv-1009", invoice_number="INV-1009", customer_id="cust-7", amount=55000.0, due_date=now - datetime.timedelta(days=10), days_overdue=10, status="PAYMENT_EXTENDED")
-            db.add_all([i1, i2, i3, i4, i5, i6, i9])
-            db.commit()
+        # Seed sample invoices
+        now = datetime.datetime.now()
+        sample_invoices = [
+            Invoice(id="inv-1001", invoice_number="INV-1001", customer_id="cust-1", amount=60000.0, due_date=now - datetime.timedelta(days=10), days_overdue=10, status="OVERDUE"),
+            Invoice(id="inv-1002", invoice_number="INV-1002", customer_id="cust-2", amount=120000.0, due_date=now - datetime.timedelta(days=40), days_overdue=40, status="OVERDUE"),
+            Invoice(id="inv-1003", invoice_number="INV-1003", customer_id="cust-3", amount=600000.0, due_date=now - datetime.timedelta(days=10), days_overdue=10, status="OVERDUE"),
+            Invoice(id="inv-1004", invoice_number="INV-1004", customer_id="cust-4", amount=80000.0, due_date=now - datetime.timedelta(days=10), days_overdue=10, status="OVERDUE"),
+            Invoice(id="inv-1005", invoice_number="INV-1005", customer_id="cust-5", amount=70000.0, due_date=now - datetime.timedelta(days=10), days_overdue=10, status="OVERDUE"),
+            Invoice(id="inv-1006", invoice_number="INV-1006", customer_id="cust-6", amount=150000.0, due_date=now - datetime.timedelta(days=5), days_overdue=5, status="OVERDUE"),
+            Invoice(id="inv-1009", invoice_number="INV-1009", customer_id="cust-7", amount=55000.0, due_date=now - datetime.timedelta(days=10), days_overdue=10, status="PAYMENT_EXTENDED"),
+            Invoice(id="inv-1010", invoice_number="INV-1010", customer_id="cust-8", amount=95000.0, due_date=now - datetime.timedelta(days=22), days_overdue=22, status="OVERDUE"),
+            Invoice(id="inv-1011", invoice_number="INV-1011", customer_id="cust-9", amount=42000.0, due_date=now - datetime.timedelta(days=7), days_overdue=7, status="OVERDUE"),
+            Invoice(id="inv-1012", invoice_number="INV-1012", customer_id="cust-10", amount=230000.0, due_date=now - datetime.timedelta(days=55), days_overdue=55, status="OVERDUE"),
+            Invoice(id="inv-1013", invoice_number="INV-1013", customer_id="cust-11", amount=115000.0, due_date=now - datetime.timedelta(days=3), days_overdue=3, status="OVERDUE"),
+            Invoice(id="inv-1014", invoice_number="INV-1014", customer_id="cust-12", amount=85000.0, due_date=now - datetime.timedelta(days=18), days_overdue=18, status="OVERDUE"),
+        ]
+        for inv in sample_invoices:
+            if not db.query(Invoice).filter(Invoice.id == inv.id).first():
+                db.add(inv)
+        db.commit()
     except Exception as e:
         print(f"Seed error: {e}")
 
@@ -582,3 +600,66 @@ def get_customers(db: Session = Depends(get_db)):
             "risk_level": c.risk_level
         })
     return res
+
+@app.post("/api/customers")
+def create_customer(payload: Dict[str, Any], db: Session = Depends(get_db)):
+    name = payload.get("name")
+    email = payload.get("email")
+    if not name or not email:
+        raise HTTPException(status_code=400, detail="Name and Email are required")
+    
+    cust_id = payload.get("id") or f"cust-{uuid.uuid4().hex[:6]}"
+    customer = Customer(
+        id=cust_id,
+        name=name,
+        email=email,
+        phone=payload.get("phone"),
+        status=payload.get("status", "ACTIVE"),
+        risk_level=payload.get("risk_level", "MEDIUM")
+    )
+    db.add(customer)
+    db.commit()
+    db.refresh(customer)
+    return {
+        "id": customer.id,
+        "name": customer.name,
+        "email": customer.email,
+        "phone": customer.phone,
+        "status": customer.status,
+        "risk_level": customer.risk_level
+    }
+
+@app.post("/api/invoices")
+def create_invoice(payload: Dict[str, Any], db: Session = Depends(get_db)):
+    customer_id = payload.get("customer_id")
+    amount = float(payload.get("amount", 0))
+    if not customer_id or amount <= 0:
+        raise HTTPException(status_code=400, detail="Valid customer_id and positive amount are required")
+    
+    inv_id = payload.get("id") or f"inv-{uuid.uuid4().hex[:6]}"
+    inv_number = payload.get("invoice_number") or f"INV-{uuid.uuid4().hex[:4].upper()}"
+    days_overdue = int(payload.get("days_overdue", 15))
+    due_date = datetime.datetime.now() - datetime.timedelta(days=days_overdue)
+    
+    invoice = Invoice(
+        id=inv_id,
+        invoice_number=inv_number,
+        customer_id=customer_id,
+        amount=amount,
+        status=payload.get("status", "OVERDUE"),
+        days_overdue=days_overdue,
+        due_date=due_date
+    )
+    db.add(invoice)
+    db.commit()
+    db.refresh(invoice)
+    return {
+        "id": invoice.id,
+        "invoice_number": invoice.invoice_number,
+        "customer_id": invoice.customer_id,
+        "amount": invoice.amount,
+        "status": invoice.status,
+        "days_overdue": invoice.days_overdue,
+        "due_date": invoice.due_date.isoformat()
+    }
+

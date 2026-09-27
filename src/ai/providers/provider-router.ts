@@ -11,6 +11,7 @@ import {
   AITimeoutError,
   AIBudgetExceededError,
   AIAuthError,
+  AILocalProviderUnavailableError,
   ValidationError
 } from '../errors';
 
@@ -21,9 +22,10 @@ export class ProviderRouter implements AIProvider {
 
   constructor(initialCallCount: number = 1) {
     this.providerFactories = [
-      () => new OpenRouterProvider(),
-      () => new GrokProvider(),
-      () => new OllamaProvider()
+      () => new OllamaProvider(),      // Primary — local Ollama, no API key needed
+      () => new OpenRouterProvider(),  // Fallback 1 — requires OPENROUTER_API_KEY
+      () => new GrokProvider(),        // Fallback 2 — requires XAI_API_KEY
+      () => new MockProvider()         // Final fallback — always succeeds
     ];
     this.maxCalls = parseInt(process.env.MAX_AI_CALLS || "10", 10);
     this.currentCallCount = initialCallCount;
@@ -34,7 +36,9 @@ export class ProviderRouter implements AIProvider {
       error instanceof AIQuotaExceededError ||
       error instanceof AIRateLimitedError ||
       error instanceof AIUnavailableError ||
-      error instanceof AITimeoutError
+      error instanceof AITimeoutError ||
+      error instanceof AILocalProviderUnavailableError ||
+      error instanceof ValidationError   // schema mismatch — try next provider
     );
   }
 

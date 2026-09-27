@@ -52,7 +52,7 @@ export function Sidebar() {
       <div className="flex items-center h-16 px-6 border-b border-[#1e4d3c] bg-[#0c251c]">
         <span className="text-xl font-semibold text-white tracking-tight flex items-center gap-2">
           <Workflow className="w-6 h-6 text-[#ADBC9F]" />
-          FlowPilot AI
+          Nocode AI
         </span>
       </div>
       

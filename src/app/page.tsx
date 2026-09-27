@@ -41,7 +41,7 @@ export default function Dashboard() {
       setWorkflows(wfList);
       setBenchmark(bench);
     } catch (err) {
-      setBackendError(err instanceof Error ? err.message : 'Unable to connect to FlowPilot backend server.');
+      setBackendError(err instanceof Error ? err.message : 'Unable to connect to Nocode backend server.');
     } finally {
       setIsLoading(false);
     }
@@ -68,7 +68,7 @@ export default function Dashboard() {
             </span>
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-[#FBFADA]">FLOWPILOT AI</h1>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-[#FBFADA]">NOCODE AI</h1>
           <p className="text-xl md:text-2xl font-light text-[#ADBC9F] mb-6">From business intent<br />to completed action.</p>
           <p className="text-[#FBFADA]/80 mb-8 max-w-xl leading-relaxed">
             Turn natural-language business objectives into intelligent, adaptive workflows. Powered by Qwen3 8B with local Ollama acceleration, LangGraph state management, and human-in-the-loop authorization.
@@ -109,7 +109,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
             <div>
-              <div className="font-bold text-sm">Cannot reach FlowPilot Backend</div>
+              <div className="font-bold text-sm">Cannot reach Nocode Backend</div>
               <div className="text-xs text-red-600 mt-0.5">{backendError} — Please ensure FastAPI server is running at {process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}.</div>
             </div>
           </div>
@@ -215,7 +215,7 @@ export default function Dashboard() {
                   <Activity className="w-6 h-6 text-[#ADBC9F]" />
                   Evaluation Suite Results
                 </h2>
-                <p className="text-[#FBFADA]/80 text-sm mt-1">FlowPilot Benchmark Engine • Generalized cross-domain performance</p>
+                <p className="text-[#FBFADA]/80 text-sm mt-1">Nocode Benchmark Engine • Generalized cross-domain performance</p>
               </div>
               <div className="flex items-center gap-3">
                 <span className="bg-[#436850] text-[#FBFADA] text-xs px-3 py-1.5 rounded-full font-mono border border-[#ADBC9F]/40">
@@ -268,7 +268,7 @@ export default function Dashboard() {
         </section>
       )}
 
-      {/* WHY FLOWPILOT? */}
+      {/* WHY NOCODE? */}
       <section>
         <h2 className="text-2xl font-bold mb-8 text-center">From Static Automation to Adaptive Execution</h2>
         <div className="grid md:grid-cols-2 gap-8">
@@ -283,7 +283,7 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 shadow-sm text-center text-slate-300">
-            <h3 className="text-sm font-bold tracking-widest text-blue-400 mb-6 uppercase">FlowPilot AI</h3>
+            <h3 className="text-sm font-bold tracking-widest text-blue-400 mb-6 uppercase">Nocode AI</h3>
             <div className="flex flex-col items-center gap-2 text-sm font-medium">
               <div className="px-4 py-1.5 border border-slate-700 rounded w-48 bg-slate-800 text-white">Business Objective</div> ↓
               <div className="px-4 py-1.5 border border-slate-700 rounded w-48 bg-slate-800">Understand</div> ↓

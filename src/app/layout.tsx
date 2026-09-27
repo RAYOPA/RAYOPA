@@ -6,7 +6,7 @@ import { AppShell } from '@/components/layout/app-shell';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'FlowPilot AI',
+  title: 'Nocode AI',
   description: 'Intelligent Business Workflow Automation platform',
 };
 

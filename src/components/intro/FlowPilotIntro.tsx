@@ -95,7 +95,7 @@ const SceneBrandReveal: React.FC = () => (
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 1.2, delay: 0.3, ease: EASE_OUT_EXPO }}
       >
-        FLOWPILOT
+        NOCODE
       </motion.span>
     </div>
     
@@ -232,7 +232,7 @@ const SceneOutro: React.FC = () => (
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 1.0, delay: 0.3, ease: EASE_OUT_EXPO }}
     >
-      FLOWPILOT
+      NOCODE
     </motion.div>
   </div>
 );

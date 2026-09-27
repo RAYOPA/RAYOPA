@@ -96,31 +96,38 @@ class ExchangeRequest(BaseModel):
 class SignupRequest(BaseModel):
     email: str
     password: str
+    name: str | None = None
+    role: str | None = "operator"
 
 @router.post("/signup")
 def signup(payload: SignupRequest, db: Session = Depends(get_db)):
-    if db.query(User).filter(User.username == payload.email).first():
-        raise HTTPException(status_code=400, detail="Email already registered")
+    clean_email = payload.email.strip().lower()
+    existing = db.query(User).filter((User.username == clean_email) | (User.email == clean_email)).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="An account with this email already exists.")
     
     user = User(
         id=str(uuid.uuid4()),
-        username=payload.email,
-        email=payload.email,
+        username=clean_email,
+        email=clean_email,
         password_hash=get_password_hash(payload.password),
-        role="viewer",  # safe default
-        email_verified=False
+        role=payload.role if payload.role in ["admin", "operator", "viewer"] else "operator",
+        email_verified=True
     )
     db.add(user)
     db.commit()
-    return {"status": "created", "id": user.id}
+    return {"status": "created", "id": user.id, "email": user.email, "role": user.role}
 
 @router.post("/login", response_model=Token)
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.username == form_data.username).first()
+    clean_username = form_data.username.strip().lower()
+    user = db.query(User).filter(
+        (User.username == clean_username) | (User.email == clean_username) | (User.username == form_data.username)
+    ).first()
     if not user or not verify_password(form_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token_expires = timedelta(minutes=JWT_EXPIRE_MINUTES)

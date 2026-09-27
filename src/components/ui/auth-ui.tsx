@@ -191,13 +191,26 @@ export function AuthUI({
       onSignUp({ name, email, password });
     } else {
       setSignUpLoading(true);
-      setTimeout(() => {
-        setSignUpLoading(false);
-        setSuccessMessage('Account created successfully! You can now sign in.');
+      try {
+        const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+        const res = await fetch(`${apiBase}/api/auth/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email.trim(), password, name: name.trim(), role: 'operator' }),
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.detail || 'Failed to create account.');
+        }
+        setSuccessMessage('Account created successfully! Switching to sign in...');
         setTimeout(() => {
           switchMode('signin');
         }, 1200);
-      }, 800);
+      } catch (err: any) {
+        setInternalError(err.message || 'Failed to create account.');
+      } finally {
+        setSignUpLoading(false);
+      }
     }
   };
 
@@ -237,7 +250,7 @@ export function AuthUI({
             <div className="p-2 rounded-xl bg-white/20 backdrop-blur-md shadow-inner">
               <BrainCircuit className="w-6 h-6 text-white" />
             </div>
-            <span className="font-semibold tracking-wide text-sm uppercase text-white/90">FlowPilot</span>
+            <span className="font-semibold tracking-wide text-sm uppercase text-white/90">Nocode</span>
           </div>
           
           <div className="relative z-10 transition-all duration-500">

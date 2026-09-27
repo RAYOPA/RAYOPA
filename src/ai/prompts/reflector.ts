@@ -19,7 +19,7 @@ export class Reflector {
   constructor(private ai: AIProvider) {}
 
   async reflect(payload: any): Promise<Reflection> {
-    const systemInstruction = `You are the Reflector component for FlowPilot AI.
+    const systemInstruction = `You are the Reflector component for Nocode AI.
 Your job is to convert workflow execution outcomes into structured lessons.
 Analyze the provided execution history and extract actionable intelligence.
 Do NOT create arbitrary tools, change permissions, or mutate business state. 

@@ -5,7 +5,18 @@ export class MockProvider implements AIProvider {
   async generateStructured<T>(prompt: string, schema: z.ZodSchema<T>, systemInstruction?: string): Promise<AIProviderResponse<T>> {
     let result: any = {};
     
-    if (prompt.includes("Analyze the following user objective:")) {
+    // Data analyst feature — system instruction contains the CSV data
+    if (systemInstruction && systemInstruction.startsWith("You are an expert data analyst AI")) {
+      result = {
+        analysis: "⚠️ No AI provider is currently configured (API keys are missing and Ollama is not running locally). " +
+          "To enable real AI analysis, please configure one of the following in your .env file:\n" +
+          "  • OPENROUTER_API_KEY — for OpenRouter (supports many models)\n" +
+          "  • GROK_API_KEY — for Grok (xAI)\n" +
+          "  • Or run Ollama locally: https://ollama.ai\n\n" +
+          "Your file was uploaded successfully and the prompt was received. " +
+          "Once an AI provider is configured this feature will return real data insights."
+      };
+    } else if (prompt.includes("Analyze the following user objective:")) {
       // Analyze mode
       result = {
         objective: "Cross-app orchestration workflow",

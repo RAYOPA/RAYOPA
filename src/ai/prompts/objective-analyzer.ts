@@ -5,7 +5,7 @@ export class ObjectiveAnalyzer {
   constructor(private ai: AIProvider) {}
 
   async analyze(userInput: string): Promise<Objective> {
-    const systemInstruction = `You are the Objective Analyzer for FlowPilot AI.
+    const systemInstruction = `You are the Objective Analyzer for Nocode AI.
 Your job is to convert natural language business objectives into structured requirements.
 Extract the core entities, explicitly listed conditions, and required high-level actions.
 Determine if the requested actions imply sensitive operations (e.g., sending emails, making payments, escalating issues) which require human approval.

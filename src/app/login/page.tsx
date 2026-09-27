@@ -55,9 +55,39 @@ export default function LoginPage() {
     await performLogin(email, pass);
   };
 
+  /** Wrapper matching AuthUI onSignUp signature */
+  const handleSignUp = async (data: { name: string; email: string; password: string }) => {
+    setLoading(true);
+    setError(undefined);
+    try {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+      const signupRes = await fetch(`${apiBase}/api/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: data.email.trim(),
+          password: data.password,
+          name: data.name.trim(),
+          role: 'operator'
+        })
+      });
+
+      if (!signupRes.ok) {
+        const errorData = await signupRes.json().catch(() => ({}));
+        throw new Error(errorData.detail || 'Failed to create account.');
+      }
+
+      await performLogin(data.email.trim(), data.password);
+    } catch (err: any) {
+      setError(err.message || 'Failed to create account.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <IntroGate>
-      <AuthUI onSignIn={handleSignIn} loading={loading} error={error} />
+      <AuthUI onSignIn={handleSignIn} onSignUp={handleSignUp} loading={loading} error={error} />
     </IntroGate>
   );
 }

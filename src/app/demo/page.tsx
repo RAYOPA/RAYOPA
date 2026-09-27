@@ -60,7 +60,7 @@ const slides = [
     ),
   },
   {
-    title: "Our Solution: FlowPilot AI",
+    title: "Our Solution: Nocode AI",
     subtitle: "An adaptive business workflow orchestration system",
     content: (
       <div className="space-y-6">
@@ -86,7 +86,7 @@ const slides = [
           Complete
         </div>
         <blockquote className="border-l-4 border-blue-600 pl-4 text-xl font-medium italic text-slate-700">
-          FlowPilot transforms business intent into an executable, stateful, adaptive workflow.
+          Nocode transforms business intent into an executable, stateful, adaptive workflow.
         </blockquote>
       </div>
     ),
@@ -106,7 +106,7 @@ const slides = [
           </ul>
         </div>
         <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
-          <h3 className="font-bold mb-4 text-blue-900">FlowPilot AI</h3>
+          <h3 className="font-bold mb-4 text-blue-900">Nocode AI</h3>
           <ul className="space-y-2 text-blue-800">
             <li>• Natural-language objective</li>
             <li>• Dynamic planning</li>
@@ -421,7 +421,7 @@ const slides = [
     content: (
       <div className="text-center space-y-8 py-12">
         <p className="text-2xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-          FlowPilot AI demonstrates how AI agents can move beyond conversation and participate in structured, stateful business workflows—with context gathering, human approval, tool execution, failure recovery, and auditability.
+          Nocode AI demonstrates how AI agents can move beyond conversation and participate in structured, stateful business workflows—with context gathering, human approval, tool execution, failure recovery, and auditability.
         </p>
         <div>
           <Link href="/workflows" className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg shadow-lg text-xl transition-all transform hover:scale-105">
@@ -445,7 +445,7 @@ export default function DemoPresentation() {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <header className="bg-white border-b px-6 py-4 flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold text-slate-800">FlowPilot AI <span className="font-normal text-slate-500">| Judge Presentation</span></h1>
+          <h1 className="text-xl font-bold text-slate-800">Nocode AI <span className="font-normal text-slate-500">| Judge Presentation</span></h1>
           <div className="flex bg-slate-100 rounded-md p-1">
             <button 
               onClick={() => setActiveTab("slides")}
@@ -524,7 +524,7 @@ export default function DemoPresentation() {
                     <div className="space-y-4">
                       <div>
                         <strong className="block text-amber-800">Opening</strong>
-                        <p>Businesses don't operate inside one application. Their workflows span emails, databases, documents, spreadsheets, and internal policies. Traditional automation usually follows predefined paths. FlowPilot demonstrates an adaptive approach where a business objective becomes an executable workflow.</p>
+                        <p>Businesses don't operate inside one application. Their workflows span emails, databases, documents, spreadsheets, and internal policies. Traditional automation usually follows predefined paths. Nocode demonstrates an adaptive approach where a business objective becomes an executable workflow.</p>
                       </div>
                       <div>
                         <strong className="block text-amber-800">Objective</strong>
@@ -603,7 +603,7 @@ export default function DemoPresentation() {
                 </div>
                 <div className="border-b pb-4">
                   <h3 className="text-xl font-bold text-slate-800 mb-2">Q: Why not use a normal workflow engine?</h3>
-                  <p className="text-slate-600 bg-slate-50 p-4 rounded border-l-4 border-blue-500">Conventional workflow engines are effective when the process path is known beforehand. FlowPilot focuses on cases where the system must interpret an objective, gather context, decide what should happen, and adapt when execution results differ from expectations.</p>
+                  <p className="text-slate-600 bg-slate-50 p-4 rounded border-l-4 border-blue-500">Conventional workflow engines are effective when the process path is known beforehand. Nocode focuses on cases where the system must interpret an objective, gather context, decide what should happen, and adapt when execution results differ from expectations.</p>
                 </div>
                 <div className="border-b pb-4">
                   <h3 className="text-xl font-bold text-slate-800 mb-2">Q: Is the demo using real customer data?</h3>

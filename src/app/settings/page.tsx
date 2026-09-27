@@ -12,7 +12,7 @@ export default function SettingsPage() {
           <SettingsIcon className="w-7 h-7 text-blue-600" />
           System Settings & Environment
         </h1>
-        <p className="text-slate-500 mt-1">Runtime configuration and active system status for FlowPilot AI.</p>
+        <p className="text-slate-500 mt-1">Runtime configuration and active system status for Nocode AI.</p>
       </div>
 
       <div className="space-y-6">

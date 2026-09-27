@@ -6,3 +6,8 @@ INV-1004,cust-4,Delta Logistics,invalid@acme.com,80000,INR,2023-09-01,2023-09-15
 INV-1005,cust-5,Epsilon Group,epsilon@acme.com,70000,INR,2023-09-01,2023-09-15,OVERDUE,10,,UNPAID,LOW
 INV-1006,cust-6,Zeta Partners,zeta@acme.com,150000,INR,2023-09-05,2023-09-20,OVERDUE,5,,UNPAID,MEDIUM
 INV-1009,cust-7,Eta Systems,eta@acme.com,55000,INR,2023-09-15,2023-10-15,PAYMENT_EXTENDED,0,,UNPAID,LOW
+INV-1010,cust-8,Nexus Technologies,finance@nexustech.io,95000,INR,2023-08-20,2023-09-05,OVERDUE,22,,UNPAID,MEDIUM
+INV-1011,cust-9,Aura Health & Care,billing@aurahealth.org,42000,INR,2023-09-10,2023-09-22,OVERDUE,7,,UNPAID,LOW
+INV-1012,cust-10,Summit Global Retail,accounts@summitglobal.com,230000,INR,2023-07-15,2023-08-01,OVERDUE,55,,UNPAID,HIGH
+INV-1013,cust-11,Quantum Cloud Systems,payments@quantumcloud.dev,115000,INR,2023-09-12,2023-09-25,OVERDUE,3,,UNPAID,LOW
+INV-1014,cust-12,Horizon Media Labs,invoicing@horizonmedialabs.com,85000,INR,2023-08-25,2023-09-10,OVERDUE,18,,UNPAID,MEDIUM
