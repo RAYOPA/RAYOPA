@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { apiFetch } from '@/lib/api/client';
+import { apiFetch, getApiBaseUrl } from '@/lib/api/client';
 import { setAuthToken, setUser } from '@/lib/auth';
 import { AuthUI } from '@/components/ui/auth-ui';
 import { IntroGate } from '@/components/intro/FlowPilotIntro';
@@ -18,24 +18,40 @@ export default function LoginPage() {
     setLoading(true);
     setError(undefined);
     try {
+      const apiBase = getApiBaseUrl();
       const formData = new URLSearchParams();
-      formData.append('username', email);
+      formData.append('username', email.trim());
       formData.append('password', pass);
 
-      const tokenRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: formData.toString(),
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+      let tokenRes: Response;
+      try {
+        tokenRes = await fetch(`${apiBase}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: formData.toString(),
+          signal: controller.signal,
+        });
+      } catch (fetchErr: any) {
+        if (fetchErr.name === 'AbortError') {
+          throw new Error('Server request timed out. Please try again or use Demo Admin.');
+        }
+        throw new Error('Cannot reach backend server. Please verify connection or use Demo Admin.');
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       if (!tokenRes.ok) {
-        throw new Error('Invalid credentials');
+        const errJson = await tokenRes.json().catch(() => ({}));
+        throw new Error(errJson.detail || 'Incorrect email or password. If you do not have an account, switch to Create Account above.');
       }
 
       const { access_token } = await tokenRes.json();
       setAuthToken(access_token);
 
-      const userRes = await apiFetch<any>('api/auth/me');
+      const userRes = await apiFetch<any>('/api/auth/me');
       setUser(userRes);
 
       router.push('/');
@@ -60,17 +76,31 @@ export default function LoginPage() {
     setLoading(true);
     setError(undefined);
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
-      const signupRes = await fetch(`${apiBase}/api/auth/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: data.email.trim(),
-          password: data.password,
-          name: data.name.trim(),
-          role: 'operator'
-        })
-      });
+      const apiBase = getApiBaseUrl();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+      let signupRes: Response;
+      try {
+        signupRes = await fetch(`${apiBase}/api/auth/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: data.email.trim(),
+            password: data.password,
+            name: data.name.trim(),
+            role: 'operator'
+          }),
+          signal: controller.signal,
+        });
+      } catch (fetchErr: any) {
+        if (fetchErr.name === 'AbortError') {
+          throw new Error('Connection timed out while creating account. Please try again.');
+        }
+        throw new Error('Cannot reach backend server. Please try again or use Demo Admin.');
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       if (!signupRes.ok) {
         const errorData = await signupRes.json().catch(() => ({}));
@@ -87,7 +117,13 @@ export default function LoginPage() {
 
   return (
     <IntroGate>
-      <AuthUI onSignIn={handleSignIn} onSignUp={handleSignUp} loading={loading} error={error} />
+      <AuthUI 
+        onSignIn={handleSignIn} 
+        onSignUp={handleSignUp} 
+        onClearError={() => setError(undefined)}
+        loading={loading} 
+        error={error} 
+      />
     </IntroGate>
   );
 }

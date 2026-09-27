@@ -25,10 +25,11 @@ app = FastAPI(title="FlowPilot Backend API")
 
 app.include_router(auth_router)
 
-# Enable CORS for frontend integration
+# Enable CORS for frontend integration (supports localhost and all Vercel/Render deployments)
 frontend_origin = os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")
 app.add_middleware(
     CORSMiddleware,
+    allow_origin_regex=r"https?://.*",
     allow_origins=[frontend_origin, "http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
@@ -37,12 +38,35 @@ app.add_middleware(
 
 def seed_initial_data(db: Session):
     try:
-        if db.query(User).count() == 0:
-            u1 = User(id=str(uuid.uuid4()), username="admin", password_hash=get_password_hash(os.getenv("DEMO_ADMIN_PASSWORD", "admin123")), role="admin")
-            u2 = User(id=str(uuid.uuid4()), username="operator", password_hash=get_password_hash(os.getenv("DEMO_OPERATOR_PASSWORD", "operator123")), role="operator")
-            u3 = User(id=str(uuid.uuid4()), username="viewer", password_hash=get_password_hash(os.getenv("DEMO_VIEWER_PASSWORD", "viewer123")), role="viewer")
-            db.add_all([u1, u2, u3])
-            db.commit()
+        # Seed predefined users with both usernames and emails
+        predefined_users = [
+            {"username": "admin", "email": "admin@nocode.local", "password": os.getenv("DEMO_ADMIN_PASSWORD", "admin123"), "role": "admin"},
+            {"username": "admin@nocode.ai", "email": "admin@nocode.ai", "password": os.getenv("DEMO_ADMIN_PASSWORD", "admin123"), "role": "admin"},
+            {"username": "demo@nocode.ai", "email": "demo@nocode.ai", "password": "password123", "role": "admin"},
+            {"username": "operator@nocode.ai", "email": "operator@nocode.ai", "password": "password123", "role": "operator"},
+            {"username": "mayank@nocode.ai", "email": "mayank@nocode.ai", "password": "password123", "role": "admin"},
+            {"username": "alex@nocode.ai", "email": "alex@nocode.ai", "password": "password123", "role": "operator"},
+            {"username": "operator", "email": "operator@nocode.local", "password": os.getenv("DEMO_OPERATOR_PASSWORD", "operator123"), "role": "operator"},
+            {"username": "viewer", "email": "viewer@nocode.local", "password": os.getenv("DEMO_VIEWER_PASSWORD", "viewer123"), "role": "viewer"},
+        ]
+        for u_data in predefined_users:
+            existing = db.query(User).filter(
+                (User.username == u_data["username"]) | (User.email == u_data["email"])
+            ).first()
+            if not existing:
+                try:
+                    new_u = User(
+                        id=str(uuid.uuid4()),
+                        username=u_data["username"],
+                        email=u_data["email"],
+                        password_hash=get_password_hash(u_data["password"]),
+                        role=u_data["role"],
+                        email_verified=True
+                    )
+                    db.add(new_u)
+                    db.commit()
+                except Exception:
+                    db.rollback()
 
         # Seed base customers
         sample_customers = [
@@ -89,6 +113,14 @@ def seed_initial_data(db: Session):
 
 @app.on_event("startup")
 def startup_event():
+    # Ensure google_id column exists in users table for SQLite migrations
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE users ADD COLUMN google_id VARCHAR"))
+            conn.commit()
+    except Exception:
+        pass
+
     db = SessionLocal()
     try:
         seed_initial_data(db)
