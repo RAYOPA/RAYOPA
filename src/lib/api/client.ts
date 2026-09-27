@@ -1,9 +1,13 @@
 export function getApiBaseUrl(): string {
+  if (typeof window !== 'undefined') {
+    const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    if (!isLocal) {
+      // In production browser, return empty string so relative URLs hit Next.js rewrites
+      return '';
+    }
+  }
   if (process.env.NEXT_PUBLIC_API_URL) {
     return process.env.NEXT_PUBLIC_API_URL;
-  }
-  if (typeof window !== 'undefined' && !['localhost', '127.0.0.1'].includes(window.location.hostname)) {
-    return 'https://rayopa.onrender.com';
   }
   return 'http://127.0.0.1:8000';
 }
@@ -36,9 +40,9 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
     }
   }
 
-  // 12s timeout controller to avoid hanging when backend is starting
+  // 5s timeout controller to respond rapidly without freezing
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 12000);
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
 
   try {
     const response = await fetch(url, {
