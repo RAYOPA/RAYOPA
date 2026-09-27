@@ -63,4 +63,7 @@ temp.json
 audit_log.json
 tests/results/audit_run_*.json
 
+# old flowpilot-ai subdirectory (legacy, must not be a submodule)
+flowpilot-ai/
+
 

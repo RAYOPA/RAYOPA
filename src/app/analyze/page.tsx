@@ -59,7 +59,13 @@ export default function AnalyzePage() {
 
       setResult(data.result);
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+      const msg = err.message || 'An unexpected error occurred.';
+      // Provide a user-friendly message for Ollama/AI provider errors
+      if (msg.includes('Ollama') || msg.includes('fetch failed') || msg.includes('ECONNREFUSED') || msg.includes('ALL_PROVIDERS_UNAVAILABLE')) {
+        setError('AI analysis requires a local Ollama server or cloud API key (OPENROUTER_API_KEY). The mock provider will respond with setup instructions.');
+      } else {
+        setError(msg);
+      }
     } finally {
       setIsLoading(false);
     }
